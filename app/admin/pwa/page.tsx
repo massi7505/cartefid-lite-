@@ -341,8 +341,11 @@ export default function PwaPage() {
 
   useEffect(() => {
     fetch('/api/admin/pwa')
-      .then(r => r.json())
-      .then(data => { setSettings(data); setLoading(false) })
+      .then(r => {
+        if (!r.ok) throw new Error('api_error')
+        return r.json()
+      })
+      .then((data: PwaSettings) => { setSettings(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
