@@ -9,8 +9,24 @@ const schema = z.object({
   password: z.string().min(8, 'Mot de passe trop court (8 caractères min)'),
 })
 
+const RATE_LIMIT = 5
+const RATE_WINDOW_MS = 15 * 60 * 1000 // 15 min
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    const now = Date.now()
+    const entry = rateLimitMap.get(ip)
+    if (!entry || now > entry.resetAt) {
+      rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    } else {
+      entry.count++
+      if (entry.count > RATE_LIMIT) {
+        return NextResponse.json({ error: 'Trop de tentatives, réessayez dans 15 minutes' }, { status: 429 })
+      }
+    }
+
     const { email, otp, password } = schema.parse(await req.json())
 
     const user = await prisma.user.findUnique({ where: { email } })
@@ -31,9 +47,10 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash, resetOtp: null, resetOtpExpiry: null },
+      data: { passwordHash, resetOtp: null, resetOtpExpiry: null, passwordChangedAt: new Date() },
     })
 
+    rateLimitMap.delete(ip)
     return NextResponse.json({ success: true })
   } catch (error) {
     if (error instanceof z.ZodError) {

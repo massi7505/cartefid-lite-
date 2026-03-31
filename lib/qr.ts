@@ -14,7 +14,9 @@ export function buildScanUrl(token: string): string {
 const PREFIX = 'dyn'
 
 function secret(): string {
-  return process.env.JWT_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'fidelite-secret'
+  const s = process.env.NEXTAUTH_SECRET ?? process.env.JWT_SECRET ?? ''
+  if (!s) throw new Error('NEXTAUTH_SECRET is not set')
+  return s
 }
 
 /**
