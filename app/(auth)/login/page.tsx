@@ -40,7 +40,8 @@ function LoginForm() {
 
     toast.success('Connexion réussie !')
     const session = await getSession()
-    if (session?.user?.role === 'ADMIN') {
+    const role = session?.user?.role
+    if (role === 'ADMIN' || role === 'STAFF') {
       router.push('/admin/dashboard')
     } else {
       router.push(redirect)

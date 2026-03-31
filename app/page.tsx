@@ -5,6 +5,6 @@ import { authOptions } from '@/lib/auth'
 export default async function HomePage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
-  if (session.user.role === 'ADMIN') redirect('/admin/dashboard')
+  if (session.user.role === 'ADMIN' || session.user.role === 'STAFF') redirect('/admin/dashboard')
   redirect('/carte')
 }
