@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { QRCodeCanvas } from 'qrcode.react'
+import dynamic from 'next/dynamic'
 import toast from 'react-hot-toast'
+
+const QRCodeCanvas = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeCanvas })), { ssr: false })
 
 interface QRCode {
   id: number

@@ -77,6 +77,8 @@ export async function GET() {
         count: Number(d.count),
       })),
       recentStamps,
+    }, {
+      headers: { 'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60' },
     })
   } catch (error) {
     console.error(error)

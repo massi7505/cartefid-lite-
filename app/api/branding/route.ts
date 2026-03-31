@@ -15,6 +15,8 @@ export async function GET() {
       name: program?.name ?? 'Fidélité',
       logoUrl: program?.logoUrl ?? null,
       faviconUrl: program?.faviconUrl ?? null,
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
     })
   } catch {
     return NextResponse.json({ name: 'Fidélité', logoUrl: null, faviconUrl: null })
