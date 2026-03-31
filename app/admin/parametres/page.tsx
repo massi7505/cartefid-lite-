@@ -380,96 +380,36 @@ export default function ParametresPage() {
 
       {/* ── PWA ── */}
       {tab === 'pwa' && (
-        <form onSubmit={savePwaSettings} className="space-y-4">
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-            <p className="text-sm font-semibold text-blue-800 mb-1">Application installable</p>
-            <p className="text-xs text-blue-600">
-              La PWA permet à vos clients d&apos;installer l&apos;app sur leur téléphone comme une application native.
+        <div className="space-y-4">
+          <div className="rounded-2xl p-8 text-center border border-indigo-100"
+            style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+                <path d="M9 7h6M9 11h4"/>
+              </svg>
+            </div>
+            <h3 className="font-black text-lg mb-2" style={{ color: '#2B3674' }}>
+              Configuration PWA avancée
+            </h3>
+            <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: '#A3AED0' }}>
+              Nom de l&apos;app, couleurs du thème indépendantes, icônes, splash screen,
+              message hors-ligne — avec prévisualisation en temps réel iOS &amp; Android.
             </p>
+            <a
+              href="/admin/pwa"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}
+            >
+              Ouvrir les paramètres PWA
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </a>
           </div>
-
-          <Toggle
-            value={pwa.pwaEnabled}
-            onChange={v => setPwa(f => ({ ...f, pwaEnabled: v }))}
-            label="Activer la PWA"
-            sublabel="Les clients peuvent installer l'app depuis leur navigateur"
-          />
-
-          <div className="bg-white rounded-2xl p-5 space-y-4" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom de l&apos;app</label>
-              <input type="text" value={pwa.appName}
-                onChange={e => setPwa(f => ({ ...f, appName: e.target.value }))}
-                placeholder="Ex: Café de la Paix Fidélité"
-                className={INPUT} />
-              <p className="text-xs text-gray-400 mt-1">Affiché dans le navigateur et les emails</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Nom court <span className="text-gray-400 font-normal">(icône sur l&apos;écran d&apos;accueil)</span>
-              </label>
-              <input type="text" value={pwa.pwaShortName}
-                onChange={e => setPwa(f => ({ ...f, pwaShortName: e.target.value.slice(0, 12) }))}
-                placeholder="Ex: Fidélité"
-                maxLength={12}
-                className={INPUT} />
-              <div className="flex justify-between mt-1">
-                <p className="text-xs text-gray-400">Maximum 12 caractères recommandé</p>
-                <p className="text-xs text-gray-400">{pwa.pwaShortName.length}/12</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Logo / Favicon reminder */}
-          <div className="rounded-xl p-4 bg-gray-50 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Icônes de l&apos;app</p>
-            <p className="text-xs text-gray-500 mb-2">
-              Le logo et le favicon définis dans l&apos;onglet <strong>Branding</strong> sont utilisés comme icônes de l&apos;app installée.
-            </p>
-            <button type="button" onClick={() => setTab('branding')}
-              className="text-xs font-semibold text-gray-700 hover:text-gray-900 transition underline">
-              Configurer le logo →
-            </button>
-          </div>
-
-          {/* Couleur thème */}
-          <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Couleur du thème</p>
-            <p className="text-xs text-gray-400 mb-3">
-              Couleur de la barre de navigation du navigateur. Définie via les couleurs de la carte dans <strong>Programme → Carte</strong>.
-            </p>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-              <div className="w-8 h-8 rounded-lg border border-gray-200" style={{ background: pwa.cardColor1 }} />
-              <div>
-                <p className="text-sm font-medium text-gray-700">{pwa.cardColor1}</p>
-                <p className="text-xs text-gray-400">Couleur principale de la carte</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Preview */}
-          {pwa.pwaEnabled && (
-            <div className="rounded-2xl border border-gray-100 p-5 bg-white">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Aperçu icône</p>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${pwa.cardColor1}, #000)` }}>
-                  📱
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{pwa.pwaShortName || pwa.appName || 'Fidélité'}</p>
-                  <p className="text-gray-400 text-xs">Sur l&apos;écran d&apos;accueil</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <button type="submit" disabled={savingPwa}
-            className="w-full text-white py-3 rounded-xl font-semibold text-sm transition disabled:opacity-50 hover:opacity-90" style={{ background: '#4318FF' }}>
-            {savingPwa ? 'Sauvegarde...' : 'Sauvegarder la configuration PWA'}
-          </button>
-        </form>
+        </div>
       )}
 
       {/* ── Liens rapides ── */}

@@ -8,6 +8,7 @@ const ADMIN_ONLY = [
   '/admin/promotions',
   '/admin/qrcodes',
   '/admin/staff',
+  '/admin/pwa',
 ]
 
 export default withAuth(

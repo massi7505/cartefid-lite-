@@ -76,11 +76,70 @@ npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
 - Toast notifications via `react-hot-toast`; `<Toaster>` mounted in `app/providers.tsx`.
 - Admin charts use `recharts`.
 
-### Next.js 15 Gotchas
+### Next.js 15/16 Gotchas
 - `params` in route handlers must be `Promise<{id: string}>` — always `await params`.
 - `useSearchParams()` requires `<Suspense>` wrapper.
 - `postcss.config.js` must exist (was missing, caused CSS not to load).
 - Tailwind v3 (not v4) — v4 broke PostCSS API.
+- Next.js 16: `middleware.ts` is deprecated, use `proxy.ts` (warning only, not blocking).
+
+## Build & Deploy Rules (DO NOT REPEAT)
+
+### Prisma Schema Changes
+- After ANY `schema.prisma` change: run `npx prisma generate` locally BEFORE committing/type-checking.
+- **NEVER add `prisma migrate deploy` to Vercel build command.** It fails when:
+  1. DB is unreachable from the Vercel build server
+  2. Table already exists (from previous `db push`) without `IF NOT EXISTS`
+- Build command must stay: `prisma generate && next build`
+- For new tables in production: run `npx prisma db push` once locally with the prod DATABASE_URL.
+- Migration SQL files must use `CREATE TABLE IF NOT EXISTS` + `INSERT IGNORE` to be idempotent.
+
+### TypeScript Null Narrowing in Closures
+TypeScript does NOT preserve null-narrowing inside nested function closures.
+```typescript
+// BAD — TypeScript error: 'x' is possibly 'null' inside tick()
+const x = ref.current
+if (!x) return
+function tick() { x.foo() }  // ← Error!
+
+// GOOD — capture as explicitly typed const after null check
+const x = ref.current
+if (!x) return
+const safeX: HTMLElement = x  // TypeScript infers non-null
+function tick() { safeX.foo() }  // ✓
+```
+Apply this pattern for ALL refs used inside nested functions (canvas, ctx, video, etc.).
+
+### Fetch Error Handling
+Always check `r.ok` before calling `.json()` and setting state. A non-2xx response
+still resolves the fetch promise and `.json()` gives `{ error: '...' }`, setting
+state to an invalid object that crashes component renders.
+```typescript
+// BAD — sets settings = { error: 'DB error' } → crash on settings.name.length
+fetch('/api/...').then(r => r.json()).then(data => setState(data))
+
+// GOOD — keeps state as null on error, shows error message instead
+fetch('/api/...')
+  .then(r => { if (!r.ok) throw new Error(); return r.json() })
+  .then((data: MyType) => setState(data))
+  .catch(() => setLoading(false))
+```
+
+## Architecture Rules
+
+### PWA Settings
+- `PwaSettings` is a **separate table**, completely independent from `LoyaltyProgram`.
+- `themeColor` / `backgroundColor` have ZERO relation to `cardColor1` / `cardColor2`.
+- NEVER synchronize PWA colors with card colors automatically.
+- `/admin/pwa` is ADMIN-ONLY — add to `ADMIN_ONLY` array in middleware.
+- The old `parametres` page PWA tab now redirects to `/admin/pwa` — do not revert.
+
+### Admin Route Access Control
+ADMIN_ONLY routes (staff cannot access) — always keep this list updated in `middleware.ts`:
+```
+/admin/parametres, /admin/programme, /admin/promotions,
+/admin/qrcodes, /admin/staff, /admin/pwa
+```
 
 ### Validation
 All API route inputs validated with Zod. Pattern: parse at top of handler, catch `ZodError` for 400 response.
