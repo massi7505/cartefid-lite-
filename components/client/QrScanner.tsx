@@ -116,7 +116,7 @@ export default function QrScanner({ onScan, onError }: Props) {
     }
 
     // ── jsQR loop — canvas pixel data, max 15 scans/s ────────────────────────
-    function loopJsQR(jsQR: (data: Uint8ClampedArray, w: number, h: number, opts?: { inversionAttempts: string }) => { data: string } | null) {
+    function loopJsQR(jsQR: (data: Uint8ClampedArray, w: number, h: number, opts?: { inversionAttempts?: 'dontInvert' | 'onlyInvert' | 'attemptBoth' | 'invertFirst' }) => { data: string } | null) {
       const canvas = canvasRef.current
       if (!canvas) return
       const ctx = canvas.getContext('2d', { willReadFrequently: true })
