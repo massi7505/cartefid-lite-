@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+  STAFF
+}
+
+model User {
+  id              Int           @id @default(autoincrement())
+  email           String        @unique
+  name            String
+  phone           String?
+  passwordHash    String
+  role            Role          @default(CLIENT)
+  qrToken         String        @unique @default(uuid())
+  emailVerified   Boolean       @default(true)
+  verifyToken     String?       @unique
+  shortCode       String?   @unique @db.VarChar(8)
+  resetOtp              String?
+  resetOtpExpiry        DateTime?
+  passwordChangedAt     DateTime?
+  inactivityEmailSentAt DateTime?
+  createdAt             DateTime           @default(now())
+  cards             LoyaltyCard[]
+  stamps            Stamp[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  endpoint  String   @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LoyaltyProgram {
+  id                         Int           @id @default(autoincrement())
+  name                       String
+  description                String?
+  stampsRequired             Int           @default(10)
+  rewardLabel                String
+  isActive                   Boolean       @default(true)
+  cardColor1                 String        @default("#CCFF00")
+  cardColor2                 String        @default("#A8D400")
+  accentColor                String        @default("#CCFF00")
+  cardIcon                   String        @default("⭐")
+  rewardExpiryDays           Int?
+  emailVerificationEnabled   Boolean       @default(false)
+  otpValidityMinutes         Int           @default(15)
+  // Branding
+  logoUrl                    String?       @db.VarChar(500)
+  faviconUrl                 String?       @db.VarChar(500)
+  // Quick links (shown on client /offres)
+  phoneNumber                String?       @db.VarChar(50)
+  uberEatsUrl                String?       @db.VarChar(500)
+  deliverooUrl               String?       @db.VarChar(500)
+  // Card style
+  stampShape                 String        @default("rounded") @db.VarChar(20)
+  cardTextColor              String        @default("#000000") @db.VarChar(20)
+  cardSubtitle               String        @default("Carte Fidélité") @db.VarChar(191)
+  cardNote                   String?       @db.Text
+  cardBgImageUrl             String?       @db.VarChar(500)
+  // PWA
+  pwaEnabled                 Boolean       @default(true)
+  pwaShortName               String?       @db.VarChar(100)
+  // Notifications
+  notificationSoundUrl       String?       @db.VarChar(500)
+  notificationSoundEnabled   Boolean       @default(true)
+  // Email notifications
+  stampEmailEnabled          Boolean       @default(true)
+  stampEmailSubject          String?       @db.VarChar(191)
+  stampEmailBody             String?       @db.Text
+  rewardEmailEnabled         Boolean       @default(true)
+  rewardEmailSubject         String?       @db.VarChar(191)
+  rewardEmailBody            String?       @db.Text
+  // Email de relance inactivité
+  inactivityEmailEnabled     Boolean       @default(false)
+  inactivityDays             Int           @default(14)
+  inactivityEmailSubject     String?       @db.VarChar(191)
+  inactivityEmailBody        String?       @db.Text
+  createdAt                  DateTime      @default(now())
+  cards                      LoyaltyCard[]
+  qrCodes                    QRCode[]
+}
+
+model LoyaltyCard {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  programId Int
+  stamps    Int            @default(0)
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id])
+  program   LoyaltyProgram @relation(fields: [programId], references: [id])
+  stampLogs Stamp[]
+  rewards   Reward[]
+}
+
+model Stamp {
+  id        Int         @id @default(autoincrement())
+  cardId    Int
+  userId    Int
+  grantedBy Int
+  note      String?
+  createdAt DateTime    @default(now())
+  card      LoyaltyCard @relation(fields: [cardId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+}
+
+model Reward {
+  id         Int         @id @default(autoincrement())
+  cardId     Int
+  label      String
+  isUsed     Boolean     @default(false)
+  expiresAt  DateTime?
+  redeemedAt DateTime    @default(now())
+  card       LoyaltyCard @relation(fields: [cardId], references: [id])
+}
+
+model QRCode {
+  id        Int            @id @default(autoincrement())
+  token     String         @unique
+  programId Int
+  multiUse  Boolean        @default(false)
+  expiresAt DateTime?
+  usedAt    DateTime?
+  program   LoyaltyProgram @relation(fields: [programId], references: [id])
+}
+
+model SmtpSettings {
+  id        Int      @id @default(autoincrement())
+  host      String   @default("")
+  port      Int      @default(587)
+  user      String   @default("")
+  pass      String   @default("")
+  from      String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+model Promotion {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?   @db.Text
+  imageUrl    String?   @db.VarChar(500)
+  couponCode  String?   @db.VarChar(191)
+  buttonLabel String?   @db.VarChar(191)
+  buttonUrl   String?   @db.VarChar(500)
+  active      Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+}
