@@ -55,7 +55,7 @@ function SidebarContent({ onClose, branding }: { onClose?: () => void; branding:
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-5 pt-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-5 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
         <div className="flex items-center gap-3">
           {branding.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -121,7 +121,7 @@ function SidebarContent({ onClose, branding }: { onClose?: () => void; branding:
       </nav>
 
       {/* Logout */}
-      <div className="px-3 pb-6 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-3 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-left"
@@ -151,8 +151,13 @@ export default function ClientNav() {
     <>
       {/* Mobile top bar */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 h-14 z-40 flex items-center justify-between px-4"
-        style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4"
+        style={{
+          background: '#111111',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          paddingTop: 'env(safe-area-inset-top)',
+          height: 'calc(3.5rem + env(safe-area-inset-top))',
+        }}
       >
         <div className="flex items-center gap-2.5">
           {branding.logoUrl ? (

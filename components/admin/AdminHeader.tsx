@@ -19,7 +19,10 @@ export default function AdminHeader({ userName }: { userName?: string | null }) 
   const info = PAGE_LABELS[pathname] ?? { title: 'Admin', sub: 'Administration' }
 
   return (
-    <header className="h-14 lg:h-20 bg-transparent flex items-center justify-between px-4 lg:px-8 flex-shrink-0">
+    <header
+      className="lg:!h-20 bg-transparent flex items-center justify-between px-4 lg:px-8 flex-shrink-0"
+      style={{ height: 'calc(3.5rem + env(safe-area-inset-top))' }}
+    >
       {/* Page title — desktop only */}
       <div className="hidden lg:block">
         <p className="text-xs font-semibold" style={{ color: '#A3AED0' }}>

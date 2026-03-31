@@ -83,8 +83,12 @@ export default function AdminSidebar({
     <>
       {/* Mobile top bar */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white z-40 flex items-center justify-between px-4"
-        style={{ boxShadow: '0 2px 20px rgba(112,144,176,0.12)' }}
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 bg-white"
+        style={{
+          boxShadow: '0 2px 20px rgba(112,144,176,0.12)',
+          paddingTop: 'env(safe-area-inset-top)',
+          height: 'calc(3.5rem + env(safe-area-inset-top))',
+        }}
       >
         <div className="flex items-center gap-2.5">
           <div
@@ -120,7 +124,7 @@ export default function AdminSidebar({
         style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.08)' }}
       >
         {/* Logo */}
-        <div className="px-6 py-7 flex items-center gap-3">
+        <div className="px-6 flex items-center gap-3" style={{ paddingTop: 'calc(1.75rem + env(safe-area-inset-top))', paddingBottom: '1.75rem' }}>
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}
@@ -153,7 +157,7 @@ export default function AdminSidebar({
         </nav>
 
         {/* User */}
-        <div className="p-4 mx-4 mb-4 rounded-2xl" style={{ background: '#F4F7FE' }}>
+        <div className="p-4 mx-4 rounded-2xl" style={{ background: '#F4F7FE', marginBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"

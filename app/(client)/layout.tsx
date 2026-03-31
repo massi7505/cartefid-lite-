@@ -9,9 +9,12 @@ export default async function ClientLayout({ children }: { children: React.React
   if (session.user.role === 'ADMIN' || session.user.role === 'STAFF') redirect('/admin/dashboard')
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#0D0D0D' }}>
       <ClientNav />
-      <main className="lg:ml-64 min-h-screen pt-14 lg:pt-0">
+      <main
+        className="lg:ml-64 min-h-screen lg:!pt-0 overflow-x-hidden w-full"
+        style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}
+      >
         {children}
       </main>
     </div>

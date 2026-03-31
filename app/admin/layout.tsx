@@ -27,9 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         userRole={session.user.role}
         programName={programName}
       />
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         <AdminHeader userName={session.user.name} />
-        <main className="flex-1 px-4 lg:px-8 pb-8 pt-2 lg:pt-0">
+        <main className="flex-1 px-4 lg:px-8 pb-8 pt-2 lg:pt-0 w-full overflow-x-hidden">
           {children}
         </main>
       </div>
