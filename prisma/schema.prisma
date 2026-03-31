@@ -147,6 +147,26 @@ model SmtpSettings {
   updatedAt DateTime @updatedAt
 }
 
+model PwaSettings {
+  id                   Int      @id @default(autoincrement())
+  appName              String   @default("Fidélité")
+  shortName            String   @default("Fidélité") @db.VarChar(12)
+  description          String   @default("Votre carte de fidélité numérique")
+  startUrl             String   @default("/carte") @db.VarChar(50)
+  themeColor           String   @default("#0D0D0D") @db.VarChar(20)
+  backgroundColor      String   @default("#0D0D0D") @db.VarChar(20)
+  display              String   @default("standalone") @db.VarChar(20)
+  orientation          String   @default("portrait") @db.VarChar(20)
+  logoUrl              String?  @db.VarChar(500)
+  faviconUrl           String?  @db.VarChar(500)
+  splashUrl            String?  @db.VarChar(500)
+  pwaEnabled           Boolean  @default(true)
+  offlineMessage       String   @default("Vous êtes hors connexion. Reconnectez-vous pour scanner.")
+  installPromptEnabled Boolean  @default(true)
+  installPromptDelay   Int?     @default(30)
+  updatedAt            DateTime @updatedAt
+}
+
 model Promotion {
   id          Int       @id @default(autoincrement())
   title       String

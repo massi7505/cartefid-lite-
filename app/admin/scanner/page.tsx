@@ -375,6 +375,7 @@ function ShortCodeInput({ onSubmit }: { onSubmit: (code: string) => void }) {
 function QrTab({ onScan }: { onScan: (token: string) => void }) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const wasActiveBeforeHideRef = useRef(false)
 
   // ── Pre-warm: kick off permission + module load before user taps ────────────
   useEffect(() => {
@@ -402,6 +403,23 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
   useEffect(() => {
     if (scanning) localStorage.setItem('cameraAuthorized', 'true')
   }, [scanning])
+
+  // ── PWA visibility: stop camera when app goes to background, resume on return
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.hidden) {
+        setScanning(prev => {
+          wasActiveBeforeHideRef.current = prev
+          return false
+        })
+      } else if (wasActiveBeforeHideRef.current) {
+        wasActiveBeforeHideRef.current = false
+        setScanning(true)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
 
   const handleScan = useCallback((token: string) => {
     setScanning(false)

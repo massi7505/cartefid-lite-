@@ -21,6 +21,7 @@ function IconQr()      { return <svg width="18" height="18" viewBox="0 0 24 24" 
 function IconLogout()  { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg> }
 function IconLogo()    { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> }
 function IconMore()    { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg> }
+function IconPwa()     { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M9 7h6M9 11h4"/></svg> }
 
 // ── Nav definitions ───────────────────────────────────────────────────────────
 const ADMIN_NAV = [
@@ -32,6 +33,7 @@ const ADMIN_NAV = [
   { href: '/admin/programme',   label: 'Programme',   Icon: IconCog },
   { href: '/admin/qrcodes',     label: 'QR Codes',    Icon: IconQr },
   { href: '/admin/parametres',  label: 'Paramètres',  Icon: IconSliders },
+  { href: '/admin/pwa',         label: 'PWA',         Icon: IconPwa },
   { href: '/admin/staff',       label: 'Staff',       Icon: IconStaff },
 ]
 

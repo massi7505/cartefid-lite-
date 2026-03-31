@@ -4,7 +4,6 @@ import { Providers } from './providers'
 import { prisma } from '@/lib/prisma'
 
 export const viewport: Viewport = {
-  themeColor: '#0D0D0D',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -13,36 +12,54 @@ export const viewport: Viewport = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  let name = 'Fidélité'
-  let faviconUrl: string | null = null
+  let appName     = 'Fidélité'
+  let shortName   = 'Fidélité'
+  let description = 'Votre carte de fidélité numérique'
+  let themeColor  = '#0D0D0D'
   let logoUrl: string | null = null
+  let faviconUrl: string | null = null
 
   try {
-    const program = await prisma.loyaltyProgram.findFirst({
-      where: { isActive: true },
-      select: { name: true, faviconUrl: true, logoUrl: true },
-    })
-    if (program) {
-      name = program.name
-      faviconUrl = program.faviconUrl
-      logoUrl = program.logoUrl
+    const pwa = await prisma.pwaSettings.findFirst()
+    if (pwa) {
+      appName     = pwa.appName
+      shortName   = pwa.shortName
+      description = pwa.description
+      themeColor  = pwa.themeColor
+      logoUrl     = pwa.logoUrl ?? null
+      faviconUrl  = pwa.faviconUrl ?? null
     }
-  } catch {}
+  } catch {
+    // PwaSettings table may not exist yet — fallback to LoyaltyProgram
+    try {
+      const program = await prisma.loyaltyProgram.findFirst({
+        where: { isActive: true },
+        select: { name: true, faviconUrl: true, logoUrl: true },
+      })
+      if (program) {
+        appName    = program.name
+        shortName  = program.name.slice(0, 12)
+        logoUrl    = program.logoUrl ?? null
+        faviconUrl = program.faviconUrl ?? null
+      }
+    } catch {}
+  }
 
   return {
-    title: { default: name, template: `%s | ${name}` },
-    description: `Carte de fidélité numérique — ${name}`,
+    title: { default: appName, template: `%s | ${appName}` },
+    description,
     appleWebApp: {
       capable: true,
       statusBarStyle: 'black-translucent',
-      title: name,
+      title: shortName,
       ...(logoUrl ? { startupImage: logoUrl } : {}),
     },
-    other: { 'mobile-web-app-capable': 'yes' },
-    ...(faviconUrl
-      ? { icons: { icon: faviconUrl, apple: logoUrl ?? faviconUrl } }
-      : logoUrl
-      ? { icons: { apple: logoUrl } }
+    other: {
+      'mobile-web-app-capable': 'yes',
+      'theme-color': themeColor,
+    },
+    ...(faviconUrl || logoUrl
+      ? { icons: { icon: faviconUrl ?? logoUrl!, apple: logoUrl ?? faviconUrl! } }
       : {}),
   }
 }

@@ -175,6 +175,26 @@ export default function DashboardPage() {
         </StatCard>
       </div>
 
+      {/* ── PWA status banner ── */}
+      <Link href="/admin/pwa"
+        className="flex items-center gap-4 p-4 rounded-2xl bg-white transition hover:shadow-md"
+        style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.08)' }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold" style={{ color: '#2B3674' }}>Application PWA</p>
+          <p className="text-xs truncate" style={{ color: '#A3AED0' }}>Configurer l'app installable · nom, couleurs, icônes</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A3AED0" strokeWidth="2" strokeLinecap="round">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </Link>
+
       {/* ── Charts row ── */}
       <DashboardCharts
         areaData={areaData}

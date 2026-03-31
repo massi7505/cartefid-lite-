@@ -1,6 +1,6 @@
 // ── Cache names ──────────────────────────────────────────────────────────────
 // Bump CACHE_VERSION to invalidate all caches on deploy
-const CACHE_VERSION  = 'v4'
+const CACHE_VERSION  = 'v5'
 const CACHE_STATIC   = `fid-static-${CACHE_VERSION}`   // Next.js hashed assets
 const CACHE_PAGES    = `fid-pages-${CACHE_VERSION}`     // HTML shells
 const CACHE_FONTS    = `fid-fonts-${CACHE_VERSION}`     // Google / system fonts
