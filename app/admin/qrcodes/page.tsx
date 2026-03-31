@@ -169,7 +169,45 @@ export default function QRCodesPage() {
 
       {/* QR list */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+
+        {/* Mobile cards */}
+        <div className="lg:hidden divide-y divide-gray-50">
+          {loading ? (
+            <p className="text-center py-10 text-gray-400 text-sm">Chargement...</p>
+          ) : qrcodes.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="text-3xl mb-2">📷</div>
+              <p className="text-gray-400 text-sm">Aucun QR code généré</p>
+            </div>
+          ) : qrcodes.map(qr => {
+            const s = qrStatus(qr)
+            return (
+              <div key={qr.id} className="flex items-center gap-3 px-4 py-3.5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono text-xs text-gray-600">{qr.token.slice(0, 14)}…</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${qr.multiUse ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {qr.multiUse ? 'Multiple' : 'Unique'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
+                    {qr.expiresAt && <span className="text-xs text-gray-400">Expire {fmt(qr.expiresAt)}</span>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedUrl(`${window.location.origin}/scan?token=${qr.token}`)}
+                  className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                >
+                  Voir QR
+                </button>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>

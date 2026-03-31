@@ -126,7 +126,7 @@ export default function RecompensesPage() {
       </div>
 
       {/* Filters + search */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+      <div className="flex flex-col gap-3 mb-4 sm:flex-row">
         <div className="flex gap-1.5 flex-wrap">
           {FILTERS.map(f => (
             <button key={f.key} onClick={() => setFilter(f.key)}
@@ -160,13 +160,53 @@ export default function RecompensesPage() {
           </svg>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher client..."
-            className="pl-8 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition w-full sm:w-56" />
+            className="pl-8 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition w-full" />
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-        <div className="overflow-x-auto">
+
+        {/* Mobile cards */}
+        <div className="lg:hidden divide-y divide-gray-50">
+          {loading ? (
+            <p className="text-center py-12 text-gray-400 text-sm">Chargement...</p>
+          ) : paginated.length === 0 ? (
+            <div className="py-14 text-center">
+              <p className="text-3xl mb-2">🎁</p>
+              <p className="text-gray-400 text-sm">{search ? 'Aucun résultat' : 'Aucune récompense'}</p>
+            </div>
+          ) : paginated.map(reward => (
+            <div key={reward.id} className={`px-4 py-3.5 ${reward.isUsed || isExpired(reward) ? 'opacity-55' : ''}`}>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0 mt-0.5">
+                  {reward.card.user.name[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{reward.card.user.name}</p>
+                  <p className="text-xs text-gray-500 truncate mb-1">{reward.label}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <StatusBadge reward={reward} />
+                    {reward.expiresAt && (
+                      <span className={`text-xs ${isExpired(reward) ? 'text-red-500' : !reward.isUsed && daysLeft(reward.expiresAt) <= 7 ? 'text-orange-600' : 'text-gray-400'}`}>
+                        Expire {fmt(reward.expiresAt)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {!reward.isUsed && !isExpired(reward) && (
+                  <button onClick={() => markUsed(reward.id)} disabled={markingId === reward.id}
+                    className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg text-white transition disabled:opacity-50 hover:opacity-90" style={{ background: '#4318FF' }}>
+                    {markingId === reward.id ? '...' : 'Utilisée'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>

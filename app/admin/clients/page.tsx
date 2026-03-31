@@ -148,7 +148,37 @@ export default function ClientsPage() {
         </div>
 
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-          <div className="overflow-x-auto">
+
+          {/* ── Mobile card list (< lg) ── */}
+          <div className="lg:hidden divide-y divide-gray-50">
+            {loading ? (
+              <p className="text-center py-12 text-gray-400 text-sm">Chargement...</p>
+            ) : clients.length === 0 ? (
+              <p className="text-center py-12 text-gray-400 text-sm">Aucun client trouvé</p>
+            ) : clients.map(client => (
+              <button
+                key={client.id}
+                onClick={() => openDetail(client.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition hover:bg-gray-50 ${selected?.id === client.id ? 'bg-gray-50' : ''}`}
+              >
+                <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  {client.name[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{client.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{client.email}</p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-sm font-bold text-gray-900">{client.cards[0]?.stamps ?? 0}<span className="text-xs font-normal text-gray-400">/{stampsRequired}</span></p>
+                  <p className="text-xs text-gray-400">{fmt(client.createdAt)}</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+              </button>
+            ))}
+          </div>
+
+          {/* ── Desktop table (≥ lg) ── */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>

@@ -163,7 +163,7 @@ export default function StaffPage() {
       {resetForm && (
         <div className="bg-white rounded-2xl p-6 mb-6 border-l-4" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)', borderLeftColor: '#FB923C' }}>
           <h2 className="text-base font-bold mb-5" style={{ color: '#2B3674' }}>Réinitialiser le mot de passe</h2>
-          <form onSubmit={handleResetPassword} className="flex gap-4 items-end">
+          <form onSubmit={handleResetPassword} className="flex flex-col sm:flex-row gap-4 sm:items-end">
             <div className="flex-1">
               <label className="block text-xs font-bold mb-1.5 uppercase tracking-wide" style={{ color: '#A3AED0' }}>Nouveau mot de passe</label>
               <input
@@ -205,59 +205,95 @@ export default function StaffPage() {
             <p className="text-xs mt-1" style={{ color: '#A3AED0' }}>Créez des comptes pour votre équipe</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px]">
-              <thead>
-                <tr style={{ borderBottom: '1px solid #F4F7FE' }}>
-                  {['Membre', 'Email', 'Créé le', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#A3AED0' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {staff.map((u, i) => (
-                  <tr key={u.id} className="transition hover:bg-gray-50/50"
-                    style={{ borderBottom: i < staff.length - 1 ? '1px solid #F4F7FE' : 'none' }}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                          style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}>
-                          {u.name[0]?.toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold" style={{ color: '#2B3674' }}>{u.name}</p>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: HORIZON_LIGHT, color: HORIZON }}>Staff</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: '#A3AED0' }}>{u.email}</td>
-                    <td className="px-6 py-4 text-sm" style={{ color: '#A3AED0' }}>
-                      {new Date(u.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => { setResetForm({ id: u.id, password: '' }); setShowForm(false) }}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
-                          style={{ color: '#FB923C', background: 'rgba(251,146,60,0.1)' }}
-                        >
-                          Réinit. mdp
-                        </button>
-                        <button
-                          onClick={() => handleDelete(u.id, u.name)}
-                          disabled={deleting === u.id}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
-                          style={{ color: '#F87171', background: 'rgba(239,68,68,0.08)' }}
-                        >
-                          {deleting === u.id ? '...' : 'Supprimer'}
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Mobile cards */}
+            <div className="lg:hidden divide-y" style={{ borderColor: '#F4F7FE' }}>
+              {staff.map(u => (
+                <div key={u.id} className="flex items-center gap-3 px-4 py-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}>
+                    {u.name[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: '#2B3674' }}>{u.name}</p>
+                    <p className="text-xs truncate" style={{ color: '#A3AED0' }}>{u.email}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => { setResetForm({ id: u.id, password: '' }); setShowForm(false) }}
+                      className="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition"
+                      style={{ color: '#FB923C', background: 'rgba(251,146,60,0.1)' }}
+                    >
+                      Mdp
+                    </button>
+                    <button
+                      onClick={() => handleDelete(u.id, u.name)}
+                      disabled={deleting === u.id}
+                      className="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition disabled:opacity-50"
+                      style={{ color: '#F87171', background: 'rgba(239,68,68,0.08)' }}
+                    >
+                      {deleting === u.id ? '...' : 'Suppr.'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #F4F7FE' }}>
+                    {['Membre', 'Email', 'Créé le', 'Actions'].map(h => (
+                      <th key={h} className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#A3AED0' }}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {staff.map((u, i) => (
+                    <tr key={u.id} className="transition hover:bg-gray-50/50"
+                      style={{ borderBottom: i < staff.length - 1 ? '1px solid #F4F7FE' : 'none' }}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}>
+                            {u.name[0]?.toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#2B3674' }}>{u.name}</p>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: HORIZON_LIGHT, color: HORIZON }}>Staff</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm" style={{ color: '#A3AED0' }}>{u.email}</td>
+                      <td className="px-6 py-4 text-sm" style={{ color: '#A3AED0' }}>
+                        {new Date(u.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => { setResetForm({ id: u.id, password: '' }); setShowForm(false) }}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
+                            style={{ color: '#FB923C', background: 'rgba(251,146,60,0.1)' }}
+                          >
+                            Réinit. mdp
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.id, u.name)}
+                            disabled={deleting === u.id}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                            style={{ color: '#F87171', background: 'rgba(239,68,68,0.08)' }}
+                          >
+                            {deleting === u.id ? '...' : 'Supprimer'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
