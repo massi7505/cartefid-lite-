@@ -1,5 +1,5 @@
 -- CreateTable: PwaSettings (PWA configuration independent from LoyaltyProgram)
-CREATE TABLE `PwaSettings` (
+CREATE TABLE IF NOT EXISTS `PwaSettings` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `appName` VARCHAR(191) NOT NULL DEFAULT 'Fidélité',
   `shortName` VARCHAR(12) NOT NULL DEFAULT 'Fidélité',
@@ -20,6 +20,6 @@ CREATE TABLE `PwaSettings` (
   PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Seed a default row so the app always has settings
-INSERT INTO `PwaSettings` (`appName`, `shortName`, `description`, `startUrl`, `themeColor`, `backgroundColor`, `display`, `orientation`, `pwaEnabled`, `offlineMessage`, `installPromptEnabled`, `installPromptDelay`, `updatedAt`)
-VALUES ('Fidélité', 'Fidélité', 'Votre carte de fidélité numérique', '/carte', '#0D0D0D', '#0D0D0D', 'standalone', 'portrait', true, 'Vous êtes hors connexion. Reconnectez-vous pour scanner.', true, 30, NOW());
+-- Seed default row (only if table is empty)
+INSERT IGNORE INTO `PwaSettings` (`id`, `appName`, `shortName`, `description`, `startUrl`, `themeColor`, `backgroundColor`, `display`, `orientation`, `pwaEnabled`, `offlineMessage`, `installPromptEnabled`, `installPromptDelay`, `updatedAt`)
+VALUES (1, 'Fidélité', 'Fidélité', 'Votre carte de fidélité numérique', '/carte', '#0D0D0D', '#0D0D0D', 'standalone', 'portrait', true, 'Vous êtes hors connexion. Reconnectez-vous pour scanner.', true, 30, NOW());
