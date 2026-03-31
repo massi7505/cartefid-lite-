@@ -31,7 +31,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: name, template: `%s | ${name}` },
     description: `Carte de fidélité numérique — ${name}`,
-    manifest: '/api/manifest',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'black-translucent',
@@ -52,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="manifest" href="/api/manifest" />
       </head>
       <body>
         <Providers>{children}</Providers>
