@@ -50,14 +50,12 @@ export default function RegisterPage() {
     if (data.requiresVerification) {
       await signIn('credentials', { email: form.email, password: form.password, redirect: false })
       router.push('/verifier-email')
-      router.refresh()
       return
     }
 
     await signIn('credentials', { email: form.email, password: form.password, redirect: false })
     toast.success('Compte créé avec succès !')
     router.push('/carte')
-    router.refresh()
   }
 
   return (
