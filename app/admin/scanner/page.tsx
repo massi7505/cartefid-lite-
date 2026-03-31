@@ -365,12 +365,18 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Auto-start on mobile
+  // Auto-start if camera was previously authorized, or on touch devices
   useEffect(() => {
-    if (window.matchMedia('(hover: none)').matches) {
+    const alreadyAuthorized = localStorage.getItem('cameraAuthorized') === 'true'
+    if (alreadyAuthorized || window.matchMedia('(hover: none)').matches) {
       setScanning(true)
     }
   }, [])
+
+  // Persist camera authorization so it auto-starts next time
+  useEffect(() => {
+    if (scanning) localStorage.setItem('cameraAuthorized', 'true')
+  }, [scanning])
 
   const handleScan = useCallback((token: string) => {
     setScanning(false)
@@ -380,6 +386,7 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
   const handleError = useCallback((msg?: string) => {
     setScanning(false)
     setError(msg ?? 'Erreur caméra')
+    localStorage.removeItem('cameraAuthorized')
   }, [])
 
   if (error) {

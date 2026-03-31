@@ -97,7 +97,7 @@ export default function ParametresPage() {
   const [programId, setProgramId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const [branding, setBranding] = useState({ logoUrl: null as string | null, faviconUrl: null as string | null })
+  const [branding, setBranding] = useState({ logoUrl: null as string | null, faviconUrl: null as string | null, appTitle: '' })
   const [savingBranding, setSavingBranding] = useState(false)
 
   const [pwa, setPwa] = useState({
@@ -149,7 +149,7 @@ export default function ParametresPage() {
     ]).then(([p, s]) => {
       if (p.id) {
         setProgramId(p.id)
-        setBranding({ logoUrl: p.logoUrl ?? null, faviconUrl: p.faviconUrl ?? null })
+        setBranding({ logoUrl: p.logoUrl ?? null, faviconUrl: p.faviconUrl ?? null, appTitle: p.name ?? '' })
         setLiens({ phoneNumber: p.phoneNumber ?? '', uberEatsUrl: p.uberEatsUrl ?? '', deliverooUrl: p.deliverooUrl ?? '' })
         setPwa({
           pwaEnabled: p.pwaEnabled ?? true,
@@ -191,7 +191,11 @@ export default function ParametresPage() {
   async function saveBranding(e: React.FormEvent) {
     e.preventDefault()
     setSavingBranding(true)
-    const ok = await patchProgram({ logoUrl: branding.logoUrl || null, faviconUrl: branding.faviconUrl || null })
+    const ok = await patchProgram({
+      name: branding.appTitle || undefined,
+      logoUrl: branding.logoUrl || null,
+      faviconUrl: branding.faviconUrl || null,
+    })
     if (ok) toast.success('Branding sauvegardé !'); else toast.error('Erreur')
     setSavingBranding(false)
   }
@@ -324,7 +328,19 @@ export default function ParametresPage() {
       {/* ── Branding ── */}
       {tab === 'branding' && (
         <form onSubmit={saveBranding} className="space-y-4">
-          <p className="text-sm text-gray-500">Logo et favicon affichés dans l&apos;application</p>
+          <p className="text-sm text-gray-500">Nom, logo et favicon affichés dans l&apos;application</p>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Titre de l&apos;application</label>
+            <input
+              type="text"
+              value={branding.appTitle}
+              onChange={e => setBranding(f => ({ ...f, appTitle: e.target.value }))}
+              placeholder="Ex: Café de la Paix"
+              className={INPUT}
+            />
+            <p className="text-xs text-gray-400 mt-1">Affiché sur la page de connexion, la barre du navigateur et les emails</p>
+          </div>
 
           <UploadField
             label="Logo"

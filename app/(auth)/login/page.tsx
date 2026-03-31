@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -15,6 +15,11 @@ const INPUT_STYLE = {
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [branding, setBranding] = useState<{ name: string; logoUrl: string | null } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/branding').then(r => r.json()).then(setBranding).catch(() => {})
+  }, [])
   // NextAuth adds ?callbackUrl=..., our old code used ?redirect=... — handle both
   const rawCallback = searchParams.get('callbackUrl') ?? searchParams.get('redirect') ?? '/carte'
   // Extract only the path (strip domain) to avoid open-redirect with absolute URLs
@@ -62,13 +67,24 @@ function LoginForm() {
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4"
-            style={{ background: LIME }}
-          >
-            S
-          </div>
-          <h1 className="text-white text-2xl font-bold">Stampy</h1>
+          {branding?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="w-14 h-14 rounded-2xl object-contain mb-4"
+              style={{ background: LIME }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          ) : (
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4"
+              style={{ background: LIME }}
+            >
+              {branding?.name?.[0]?.toUpperCase() ?? 'S'}
+            </div>
+          )}
+          <h1 className="text-white text-2xl font-bold">{branding?.name ?? 'Stampy'}</h1>
           <p className="text-white/40 text-sm mt-1">Connectez-vous à votre compte</p>
         </div>
 
