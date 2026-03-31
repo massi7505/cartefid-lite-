@@ -121,6 +121,7 @@ export default function QrScanner({ onScan, onError }: Props) {
       if (!canvas) return
       const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (!ctx) return
+      const safeCanvas: HTMLCanvasElement = canvas
 
       let lastScan = 0
 
@@ -132,10 +133,10 @@ export default function QrScanner({ onScan, onError }: Props) {
           lastScan = ts
           const { videoWidth: w, videoHeight: h } = video
           if (w > 0 && h > 0) {
-            canvas.width  = w
-            canvas.height = h
+            safeCanvas.width  = w
+            safeCanvas.height = h
             ctx.drawImage(video, 0, 0, w, h)
-            const img = ctx.getImageData(0, 0, w, h)
+            const img = ctx.getImageData(0, 0, safeCanvas.width, safeCanvas.height)
             const code = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' })
             if (code?.data) { handleDecoded(code.data); return }
           }
