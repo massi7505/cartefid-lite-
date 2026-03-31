@@ -1,4 +1,4 @@
-import { NextAuthOptions, Session } from 'next-auth'
+import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
@@ -42,24 +42,29 @@ export const authOptions: NextAuthOptions = {
         token.emailVerified = (user as { emailVerified: boolean }).emailVerified
       } else if (token.id) {
         // Invalidate token if password was changed after it was issued
-        const dbUser = await prisma.user.findUnique({
-          where: { id: Number(token.id) },
-          select: { passwordChangedAt: true },
-        })
-        if (
-          dbUser?.passwordChangedAt &&
-          typeof token.iat === 'number' &&
-          dbUser.passwordChangedAt.getTime() > token.iat * 1000
-        ) {
-          return { ...token, invalid: true }
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: Number(token.id) },
+            select: { passwordChangedAt: true },
+          })
+          if (
+            dbUser?.passwordChangedAt &&
+            typeof token.iat === 'number' &&
+            dbUser.passwordChangedAt.getTime() > token.iat * 1000
+          ) {
+            return { ...token, invalid: true }
+          }
+        } catch {
+          // DB error — keep token valid rather than locking out the user
         }
       }
       return token
     },
     async session({ session, token }) {
       if ((token as { invalid?: boolean }).invalid) {
-        // Password changed after token was issued — force re-login
-        return null as unknown as Session
+        // Password changed after token was issued — expire the session
+        session.expires = new Date(0).toISOString()
+        return session
       }
       if (session.user) {
         session.user.id = token.id as string
