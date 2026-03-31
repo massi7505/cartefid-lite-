@@ -15,7 +15,15 @@ const INPUT_STYLE = {
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') ?? '/carte'
+  // NextAuth adds ?callbackUrl=..., our old code used ?redirect=... — handle both
+  const rawCallback = searchParams.get('callbackUrl') ?? searchParams.get('redirect') ?? '/carte'
+  // Extract only the path (strip domain) to avoid open-redirect with absolute URLs
+  let redirect = '/carte'
+  try {
+    redirect = new URL(rawCallback).pathname
+  } catch {
+    redirect = rawCallback.startsWith('/') ? rawCallback : '/carte'
+  }
   const verified = searchParams.get('verified') === '1'
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
