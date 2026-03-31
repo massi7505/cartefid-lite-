@@ -19,8 +19,8 @@ export default function AdminHeader({ userName }: { userName?: string | null }) 
   const info = PAGE_LABELS[pathname] ?? { title: 'Admin', sub: 'Administration' }
 
   return (
-    <header className="h-16 lg:h-20 bg-transparent flex items-center justify-between px-4 lg:px-8 flex-shrink-0">
-      {/* Page title */}
+    <header className="h-14 lg:h-20 bg-transparent flex items-center justify-between px-4 lg:px-8 flex-shrink-0">
+      {/* Page title — desktop only */}
       <div className="hidden lg:block">
         <p className="text-xs font-semibold" style={{ color: '#A3AED0' }}>
           Pages&nbsp;&nbsp;/&nbsp;&nbsp;<span style={{ color: '#2B3674' }}>{info.title}</span>
@@ -28,10 +28,10 @@ export default function AdminHeader({ userName }: { userName?: string | null }) 
         <h1 className="text-xl font-black mt-0.5" style={{ color: '#2B3674' }}>{info.title}</h1>
       </div>
 
-      {/* Right: search + actions */}
-      <div className="flex items-center gap-3 ml-auto">
+      {/* Right: search + actions — desktop only */}
+      <div className="hidden lg:flex items-center gap-3 ml-auto">
         {/* Search */}
-        <div className="relative hidden sm:flex items-center">
+        <div className="relative flex items-center">
           <div className="absolute left-3.5 text-gray-400">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>

@@ -51,7 +51,7 @@ export default function DashboardCharts({
           </div>
         </div>
         {areaData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={160}>
             <BarChart data={areaData} barSize={6} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false}/>
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#A3AED0' }} axisLine={false} tickLine={false} interval="preserveStartEnd"/>
@@ -69,7 +69,7 @@ export default function DashboardCharts({
           <p className="text-xs font-semibold" style={{ color: '#A3AED0' }}>Cette semaine</p>
           <h2 className="text-lg font-black mt-0.5" style={{ color: '#2B3674' }}>Par jour</h2>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={160}>
           <BarChart data={weeklyData} barSize={14} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false}/>
             <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#A3AED0' }} axisLine={false} tickLine={false}/>

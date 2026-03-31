@@ -65,21 +65,21 @@ function StatCard({ label, value, sub, subOk, g1, g2, href, children }: {
   children: React.ReactNode
 }) {
   const inner = (
-    <div className="bg-white rounded-2xl p-5 flex items-start justify-between transition hover:shadow-md h-full"
+    <div className="bg-white rounded-2xl p-3.5 sm:p-5 flex items-start justify-between transition hover:shadow-md h-full"
       style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold mb-3 truncate" style={{ color: '#A3AED0' }}>{label}</p>
-        <p className="text-2xl lg:text-3xl font-black leading-none" style={{ color: '#2B3674' }}>{value}</p>
+      <div className="flex-1 min-w-0 pr-1">
+        <p className="text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3 leading-snug" style={{ color: '#A3AED0' }}>{label}</p>
+        <p className="text-xl sm:text-2xl lg:text-3xl font-black leading-none" style={{ color: '#2B3674' }}>{value}</p>
         {sub && (
-          <p className="text-xs mt-2 leading-tight"
+          <p className="text-[11px] sm:text-xs mt-1.5 leading-tight"
             style={{ color: subOk === true ? '#01B574' : '#A3AED0' }}>
             {sub}
           </p>
         )}
       </div>
-      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ml-3"
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ml-2 sm:ml-3"
         style={{ background: `linear-gradient(135deg, ${g1} 0%, ${g2} 100%)` }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
           strokeLinecap="round" strokeLinejoin="round">
           {children}
         </svg>

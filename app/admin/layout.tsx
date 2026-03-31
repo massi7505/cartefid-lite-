@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } catch {}
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#F4F7FE', color: '#1a202c' }}>
+    <div className="min-h-screen flex overflow-x-hidden" style={{ background: '#F4F7FE', color: '#1a202c' }}>
       <AdminSidebar
         userName={session.user.name}
         userRole={session.user.role}

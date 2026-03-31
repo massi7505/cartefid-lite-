@@ -130,8 +130,8 @@ export default function ClientsPage() {
   return (
     <div className="flex gap-6 h-full">
 
-      {/* ── Left: list ── */}
-      <div className="flex-1 min-w-0">
+      {/* ── Left: list — hidden on mobile when detail is open ── */}
+      <div className={`flex-1 min-w-0 ${selected || detailLoading ? 'hidden lg:block' : 'block'}`}>
         <div className="mb-6">
           <h1 className="text-2xl font-black" style={{ color: '#2B3674' }}>Clients</h1>
           <p className="text-sm mt-1" style={{ color: '#A3AED0' }}>{total} client{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''}</p>
@@ -213,8 +213,18 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* ── Right: detail panel ── */}
-      <div className="w-80 flex-shrink-0">
+      {/* ── Right: detail panel — full width on mobile ── */}
+      <div className={`flex-shrink-0 ${selected || detailLoading ? 'w-full lg:w-80' : 'hidden lg:block lg:w-80'}`}>
+        {/* Mobile back button */}
+        {(selected || detailLoading) && (
+          <button
+            className="lg:hidden flex items-center gap-1.5 text-sm font-semibold mb-4"
+            style={{ color: '#4318FF' }}
+            onClick={() => { setSelected(null); setDetailLoading(false) }}
+          >
+            ← Retour aux clients
+          </button>
+        )}
         {detailLoading ? (
           <div className="bg-white rounded-2xl p-8 flex items-center justify-center" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
             <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4318FF transparent #4318FF #4318FF' }} />
