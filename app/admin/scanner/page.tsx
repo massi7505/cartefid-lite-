@@ -378,24 +378,20 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
 
   // ── Pre-warm: kick off permission + module load before user taps ────────────
   useEffect(() => {
-    // Pre-import jsQR in idle time (fallback for non-BarcodeDetector browsers)
     const schedulePreload = () => {
-      if (!('BarcodeDetector' in window)) {
-        import('jsqr').catch(() => {})
-      }
+      if (!('BarcodeDetector' in window)) import('jsqr').catch(() => {})
     }
     if ('requestIdleCallback' in window) {
       requestIdleCallback(schedulePreload, { timeout: 2000 })
     } else {
       setTimeout(schedulePreload, 500)
     }
-    // Eagerly trigger permission dialog if already authorized (fast path)
     if (localStorage.getItem('cameraAuthorized') === 'true') {
       navigator.mediaDevices?.getUserMedia({ video: true }).catch(() => {})
     }
   }, [])
 
-  // Auto-start if camera was previously authorized, or on touch devices
+  // Auto-start on touch devices or if already authorized
   useEffect(() => {
     const alreadyAuthorized = localStorage.getItem('cameraAuthorized') === 'true'
     if (alreadyAuthorized || window.matchMedia('(hover: none)').matches) {
@@ -403,7 +399,6 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
     }
   }, [])
 
-  // Persist camera authorization so it auto-starts next time
   useEffect(() => {
     if (scanning) localStorage.setItem('cameraAuthorized', 'true')
   }, [scanning])
@@ -419,50 +414,85 @@ function QrTab({ onScan }: { onScan: (token: string) => void }) {
     localStorage.removeItem('cameraAuthorized')
   }, [])
 
+  // ── Error state ─────────────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="rounded-2xl border-2 border-red-100 bg-red-50 p-8 text-center">
         <div className="text-4xl mb-3">📷</div>
         <p className="font-semibold text-red-700 mb-1">{error}</p>
-        <p className="text-red-500 text-sm mb-4">Vérifiez les autorisations de votre navigateur</p>
-        <button onClick={() => { setError(null); setScanning(true) }}
-          className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-semibold">
+        <p className="text-red-500 text-sm mb-4">Vérifiez les autorisations du navigateur</p>
+        <button
+          onClick={() => { setError(null); setScanning(true) }}
+          className="px-5 py-3 bg-gray-900 text-white rounded-xl text-sm font-semibold min-h-[44px]"
+        >
           Réessayer
         </button>
       </div>
     )
   }
 
+  // ── Idle state — activate camera ─────────────────────────────────────────────
   if (!scanning) {
     return (
-      <div
-        onClick={() => setScanning(true)}
-        className="border-2 border-dashed border-gray-200 rounded-2xl p-14 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition group select-none"
-      >
-        <div className="text-6xl mb-4 group-hover:scale-110 transition">📷</div>
-        <p className="font-semibold text-gray-900 mb-1 text-lg">Scanner la carte client</p>
-        <p className="text-gray-400 text-sm">Cliquez pour activer la caméra</p>
+      <div className="space-y-3">
+        <button
+          onClick={() => setScanning(true)}
+          className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition group select-none min-h-[44px]"
+        >
+          <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">📷</div>
+          <p className="font-bold text-gray-900 text-lg mb-1">Activer la caméra</p>
+          <p className="text-gray-400 text-sm">Scannez le QR code de la carte client</p>
+        </button>
+
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <p className="text-xs font-semibold text-gray-500 mb-2">Ou saisir le code client manuellement</p>
+          <ShortCodeInput onSubmit={onScan} />
+        </div>
       </div>
     )
   }
 
+  // ── Active scanning state ─────────────────────────────────────────────────
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="font-semibold text-gray-900 flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block" />
-          Caméra active
-        </p>
-        <button onClick={() => setScanning(false)} className="text-sm text-red-500 hover:text-red-700 font-medium">
-          Arrêter
-        </button>
-      </div>
-      <QrScanner onScan={handleScan} onError={handleError} />
-      <p className="text-center text-gray-400 text-sm mt-3">Pointez vers le QR code du client</p>
+    <div className="space-y-3">
+      {/*
+        Camera container:
+          Mobile:  fills ~65% of viewport height, full-width (immersive)
+          Desktop: fixed max height (comfortable scan zone)
+      */}
+      <div
+        className="relative overflow-hidden rounded-2xl bg-black"
+        style={{ height: 'clamp(280px, 62dvh, 520px)' }}
+      >
+        <QrScanner onScan={handleScan} onError={handleError} />
 
-      {/* Manual short code fallback */}
-      <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-        <p className="text-xs font-semibold text-gray-500 mb-2">QR code illisible ? Saisir le code client</p>
+        {/* Status bar overlay */}
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-1.5">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
+            <span className="text-white text-xs font-semibold">Caméra active</span>
+          </div>
+          <button
+            onClick={() => setScanning(false)}
+            className="pointer-events-auto bg-black/60 backdrop-blur-sm text-white rounded-xl px-3 py-1.5 text-xs font-semibold hover:bg-black/80 transition min-h-[32px]"
+          >
+            Arrêter
+          </button>
+        </div>
+
+        {/* Hint text at bottom */}
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+          <p className="bg-black/50 backdrop-blur-sm text-white/80 text-xs rounded-lg px-3 py-1">
+            Pointez vers le QR code du client
+          </p>
+        </div>
+      </div>
+
+      {/* Short code fallback — compact, accessible at thumb */}
+      <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
+        <p className="text-xs font-semibold text-gray-500 mb-2">
+          QR code illisible ? Saisir le code client :
+        </p>
         <ShortCodeInput onSubmit={onScan} />
       </div>
     </div>
@@ -576,10 +606,11 @@ export default function ScannerPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black" style={{ color: '#2B3674' }}>Scanner un client</h1>
-        <p className="text-sm mt-1" style={{ color: '#A3AED0' }}>QR code ou recherche par nom / email / téléphone</p>
+    /* Full-width on mobile so the camera fills the screen edge-to-edge */
+    <div className="-mx-4 md:mx-0 md:max-w-lg md:mx-auto">
+      <div className="px-4 md:px-0 mb-5">
+        <h1 className="text-xl font-black md:text-2xl" style={{ color: '#2B3674' }}>Scanner un client</h1>
+        <p className="text-sm mt-0.5" style={{ color: '#A3AED0' }}>QR code ou recherche par nom / email</p>
       </div>
 
       {/* New reward unlocked modal */}
@@ -652,7 +683,7 @@ export default function ScannerPage() {
       ) : (
         <>
           {/* Tab switcher */}
-          <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
+          <div className="flex bg-gray-100 rounded-xl p-1 mb-4 mx-4 md:mx-0 sticky top-0 z-10 bg-[#F4F7FE] pt-0.5">
             {([
               { key: 'qr' as const, label: 'Scanner QR', icon: '📷' },
               { key: 'search' as const, label: 'Recherche', icon: '🔍' },
@@ -669,8 +700,10 @@ export default function ScannerPage() {
             ))}
           </div>
 
-          {tab === 'qr' && <QrTab onScan={handleScan} />}
-          {tab === 'search' && <SearchPanel onSelect={c => { playScanBeep(scanSoundUrl); setClient(c) }} />}
+          <div className="px-4 md:px-0">
+            {tab === 'qr' && <QrTab onScan={handleScan} />}
+            {tab === 'search' && <SearchPanel onSelect={c => { playScanBeep(scanSoundUrl); setClient(c) }} />}
+          </div>
         </>
       )}
     </div>

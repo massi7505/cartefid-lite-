@@ -163,15 +163,15 @@ export default function QrScanner({ onScan, onError }: Props) {
   }, [onScan, onError])
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-black relative">
-      {/* Native video element — no library overhead */}
+    <div className="overflow-hidden rounded-2xl bg-black relative w-full h-full" style={{ minHeight: '200px' }}>
+      {/* Native video element — fills whatever height the parent provides */}
       <video
         ref={videoRef}
         muted
         playsInline
         autoPlay
-        className="w-full block"
-        style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+        className="w-full h-full block"
+        style={{ objectFit: 'cover' }}
       />
       {/* Off-screen canvas for jsQR fallback */}
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />

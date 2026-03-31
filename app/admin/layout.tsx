@@ -21,15 +21,37 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } catch {}
 
   return (
-    <div className="min-h-screen flex overflow-x-hidden" style={{ background: '#F4F7FE', color: '#1a202c' }}>
+    <div
+      className="min-h-screen flex overflow-x-hidden"
+      style={{ background: '#F4F7FE', color: '#1a202c' }}
+    >
       <AdminSidebar
         userName={session.user.name}
         userRole={session.user.role}
         programName={programName}
       />
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
-        <AdminHeader userName={session.user.name} />
-        <main className="flex-1 px-4 lg:px-8 pb-8 pt-2 lg:pt-0 w-full overflow-x-hidden">
+
+      {/*
+        Content wrapper margins by breakpoint:
+          mobile (< md):  no margin  — no sidebar, bottom nav instead
+          tablet (md-lg): ml-16      — icon-only sidebar (w-16)
+          desktop (lg+):  ml-64      — full sidebar (w-64)
+      */}
+      <div className="flex-1 md:ml-16 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
+        <AdminHeader userName={session.user.name} programName={programName} />
+
+        {/*
+          Bottom padding by breakpoint:
+            mobile:  5rem + safe-area  — clears the fixed bottom nav
+            md+:     2rem              — normal padding
+        */}
+        <main className="
+          flex-1 w-full overflow-x-hidden
+          px-4 md:px-5 lg:px-8
+          pt-1 lg:pt-0
+          pb-[calc(4.5rem+env(safe-area-inset-bottom))]
+          md:pb-8
+        ">
           {children}
         </main>
       </div>

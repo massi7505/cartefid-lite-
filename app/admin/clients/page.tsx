@@ -137,14 +137,23 @@ export default function ClientsPage() {
           <p className="text-sm mt-1" style={{ color: '#A3AED0' }}>{total} client{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''}</p>
         </div>
 
-        <div className="mb-4">
-          <input
-            type="search"
-            placeholder="Rechercher par nom ou email..."
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
-            className="w-full max-w-sm px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition"
-          />
+        {/* Sticky search — stays visible while scrolling through client list */}
+        <div className="sticky top-0 z-10 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-2"
+          style={{ background: 'linear-gradient(to bottom, #F4F7FE 85%, transparent)' }}>
+          <div className="relative max-w-sm">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+              <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <input
+              type="search"
+              placeholder="Rechercher par nom ou email..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 transition bg-white"
+              style={{ minHeight: '44px' }}
+            />
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
@@ -152,29 +161,72 @@ export default function ClientsPage() {
           {/* ── Mobile card list (< lg) ── */}
           <div className="lg:hidden divide-y divide-gray-50">
             {loading ? (
-              <p className="text-center py-12 text-gray-400 text-sm">Chargement...</p>
+              /* Skeleton cards */
+              [1,2,3,4,5].map(i => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                  <div className="skeleton w-10 h-10 rounded-full flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="skeleton h-3.5 w-28 mb-1.5 rounded" />
+                    <div className="skeleton h-2.5 w-40 mb-2 rounded" />
+                    <div className="skeleton h-1.5 w-full rounded-full" />
+                  </div>
+                  <div className="skeleton w-10 h-8 rounded flex-shrink-0" />
+                </div>
+              ))
             ) : clients.length === 0 ? (
-              <p className="text-center py-12 text-gray-400 text-sm">Aucun client trouvé</p>
-            ) : clients.map(client => (
-              <button
-                key={client.id}
-                onClick={() => openDetail(client.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition hover:bg-gray-50 ${selected?.id === client.id ? 'bg-gray-50' : ''}`}
-              >
-                <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                  {client.name[0]?.toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{client.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{client.email}</p>
-                </div>
-                <div className="flex-shrink-0 text-right">
-                  <p className="text-sm font-bold text-gray-900">{client.cards[0]?.stamps ?? 0}<span className="text-xs font-normal text-gray-400">/{stampsRequired}</span></p>
-                  <p className="text-xs text-gray-400">{fmt(client.createdAt)}</p>
-                </div>
-                <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
-              </button>
-            ))}
+              <div className="py-14 text-center">
+                <p className="text-3xl mb-2">👤</p>
+                <p className="text-gray-400 text-sm">Aucun client trouvé</p>
+              </div>
+            ) : clients.map(client => {
+              const stamps = client.cards[0]?.stamps ?? 0
+              const pctMobile = Math.min(100, Math.round((stamps / stampsRequired) * 100))
+              const pendingCount = client.cards.reduce((s, c) => s + c.rewards.filter(r => !r).length, 0)
+              return (
+                <button
+                  key={client.id}
+                  onClick={() => openDetail(client.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 ${selected?.id === client.id ? 'bg-indigo-50/40' : 'hover:bg-gray-50/60'}`}
+                  style={{ minHeight: '64px' }}
+                >
+                  {/* Avatar */}
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}
+                  >
+                    {client.name[0]?.toUpperCase()}
+                  </div>
+
+                  {/* Info + progress */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{client.name}</p>
+                    <p className="text-xs text-gray-500 truncate mb-1.5">{client.email}</p>
+                    {/* Progress bar */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#E0E5F2' }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pctMobile}%`, background: '#4318FF' }} />
+                      </div>
+                      <span className="text-[10px] font-bold flex-shrink-0" style={{ color: '#A3AED0' }}>
+                        {stamps}/{stampsRequired}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Rewards badge + chevron */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {client.cards.reduce((s, c) => s + c.rewards.length, 0) > 0 && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: '#FFF8EB', color: '#F6A731' }}>
+                        🎁
+                      </span>
+                    )}
+                    <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </button>
+              )
+            })}
           </div>
 
           {/* ── Desktop table (≥ lg) ── */}

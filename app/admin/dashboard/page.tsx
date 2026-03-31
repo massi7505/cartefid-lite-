@@ -100,11 +100,35 @@ export default function DashboardPage() {
     })
   }, [])
 
+  // ── Skeleton loading ─────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: '#4318FF transparent #4318FF #4318FF' }} />
+      <div className="space-y-6 max-w-7xl">
+        {/* KPI skeleton grid — same 2-col mobile / 4-col desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-2xl p-3.5 sm:p-5" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1 pr-2">
+                  <div className="skeleton h-3 w-20 mb-3 rounded" />
+                  <div className="skeleton h-8 w-12 mb-2 rounded" />
+                  <div className="skeleton h-2.5 w-24 rounded" />
+                </div>
+                <div className="skeleton w-10 h-10 rounded-full flex-shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Charts skeleton */}
+        <div className="grid lg:grid-cols-[1fr_300px] gap-4">
+          {[1, 2].map(i => (
+            <div key={i} className="bg-white rounded-2xl p-6" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
+              <div className="skeleton h-3 w-28 mb-2 rounded" />
+              <div className="skeleton h-6 w-40 mb-6 rounded" />
+              <div className="skeleton h-40 rounded-xl" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

@@ -2,28 +2,68 @@
 
 import { usePathname } from 'next/navigation'
 
-const PAGE_LABELS: Record<string, { title: string; sub: string }> = {
-  '/admin/dashboard':   { title: 'Dashboard',    sub: 'Tableau de bord' },
-  '/admin/scanner':     { title: 'Scanner',       sub: 'Scanner un client' },
-  '/admin/clients':     { title: 'Clients',       sub: 'Gestion des clients' },
-  '/admin/recompenses': { title: 'Récompenses',   sub: 'Suivi des récompenses' },
-  '/admin/promotions':  { title: 'Promotions',    sub: 'Offres et promotions' },
-  '/admin/programme':   { title: 'Programme',     sub: 'Configuration du programme' },
-  '/admin/parametres':  { title: 'Paramètres',    sub: 'Configuration générale' },
-  '/admin/staff':       { title: 'Staff',         sub: 'Gestion des comptes staff' },
-  '/admin/qrcodes':     { title: 'QR Codes',      sub: 'Gestion des QR codes' },
+const PAGE_LABELS: Record<string, { title: string }> = {
+  '/admin/dashboard':   { title: 'Dashboard' },
+  '/admin/scanner':     { title: 'Scanner' },
+  '/admin/clients':     { title: 'Clients' },
+  '/admin/recompenses': { title: 'Récompenses' },
+  '/admin/promotions':  { title: 'Promotions' },
+  '/admin/programme':   { title: 'Programme' },
+  '/admin/parametres':  { title: 'Paramètres' },
+  '/admin/staff':       { title: 'Staff' },
+  '/admin/qrcodes':     { title: 'QR Codes' },
 }
 
-export default function AdminHeader({ userName }: { userName?: string | null }) {
+function IconLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+  )
+}
+
+export default function AdminHeader({
+  userName,
+  programName,
+}: {
+  userName?: string | null
+  programName?: string
+}) {
   const pathname = usePathname()
-  const info = PAGE_LABELS[pathname] ?? { title: 'Admin', sub: 'Administration' }
+  const info = PAGE_LABELS[pathname] ?? { title: 'Admin' }
 
   return (
     <header
-      className="lg:!h-20 bg-transparent flex items-center justify-between px-4 lg:px-8 flex-shrink-0"
-      style={{ height: 'calc(3.5rem + env(safe-area-inset-top))' }}
+      className="flex-shrink-0 flex items-center justify-between px-4 md:px-5 lg:px-8 bg-transparent"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        height: 'calc(3.5rem + env(safe-area-inset-top))',
+      }}
     >
-      {/* Page title — desktop only */}
+      {/* ── Mobile: brand logo + page title (no sidebar top bar) ────────── */}
+      <div className="md:hidden flex items-center gap-2.5">
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}
+        >
+          <IconLogo />
+        </div>
+        <div>
+          <p className="text-[11px] font-medium leading-none" style={{ color: '#A3AED0' }}>
+            {programName ?? 'Fidélité'}
+          </p>
+          <h1 className="text-base font-black leading-tight" style={{ color: '#2B3674' }}>
+            {info.title}
+          </h1>
+        </div>
+      </div>
+
+      {/* ── Tablet: page title only ──────────────────────────────────────── */}
+      <div className="hidden md:block lg:hidden">
+        <h1 className="text-lg font-black" style={{ color: '#2B3674' }}>{info.title}</h1>
+      </div>
+
+      {/* ── Desktop: breadcrumb + title ───────────────────────────────────── */}
       <div className="hidden lg:block">
         <p className="text-xs font-semibold" style={{ color: '#A3AED0' }}>
           Pages&nbsp;&nbsp;/&nbsp;&nbsp;<span style={{ color: '#2B3674' }}>{info.title}</span>
@@ -31,9 +71,8 @@ export default function AdminHeader({ userName }: { userName?: string | null }) 
         <h1 className="text-xl font-black mt-0.5" style={{ color: '#2B3674' }}>{info.title}</h1>
       </div>
 
-      {/* Right: search + actions — desktop only */}
+      {/* ── Desktop right: search + bell + avatar ─────────────────────────── */}
       <div className="hidden lg:flex items-center gap-3 ml-auto">
-        {/* Search */}
         <div className="relative flex items-center">
           <div className="absolute left-3.5 text-gray-400">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -53,18 +92,20 @@ export default function AdminHeader({ userName }: { userName?: string | null }) 
           />
         </div>
 
-        {/* Notification bell */}
-        <button className="w-10 h-10 rounded-full flex items-center justify-center transition hover:bg-white/80 relative"
-          style={{ background: 'white', boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.08)' }}>
+        <button
+          className="w-10 h-10 rounded-full flex items-center justify-center transition hover:bg-white/80 relative"
+          style={{ background: 'white', boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.08)' }}
+        >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A3AED0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 01-3.46 0"/>
           </svg>
         </button>
 
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-default select-none"
-          style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)', boxShadow: '0 4px 12px rgba(67,24,255,0.35)' }}>
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-default select-none"
+          style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)', boxShadow: '0 4px 12px rgba(67,24,255,0.35)' }}
+        >
           {userName?.[0]?.toUpperCase() ?? 'A'}
         </div>
       </div>
