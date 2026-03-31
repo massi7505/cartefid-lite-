@@ -235,51 +235,86 @@ export default function CartePage() {
     setLoading(false)
   }, [])
 
-  // ── SSE: real-time stamp updates ──────────────────────────────────────────
+  // ── SSE: real-time stamp updates — stable connection, Page Visibility aware ─
+  // Keep fetchData in a ref so the SSE effect has zero deps and never reconnects
+  const fetchDataRef = useRef(fetchData)
+  useEffect(() => { fetchDataRef.current = fetchData }, [fetchData])
+
   useEffect(() => {
-    const es = new EventSource('/api/cards/stream')
+    let es: EventSource | null = null
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
+    let retryDelay = 1000
 
-    es.addEventListener('stamp', (e) => {
-      try {
-        const event = JSON.parse(e.data)
-        // Update stamp count instantly
-        setCard(prev => {
-          if (!prev) return prev
-          return {
-            ...prev,
-            stamps: event.stampsNow,
-            rewards: event.rewardUnlocked
-              ? [...prev.rewards, { id: Date.now(), label: event.rewardLabel ?? '', isUsed: false, expiresAt: null }]
-              : prev.rewards,
+    function connect() {
+      if (document.hidden) return   // don't open when tab is invisible
+      es = new EventSource('/api/cards/stream')
+
+      es.addEventListener('stamp', (e) => {
+        retryDelay = 1000           // reset backoff on successful event
+        try {
+          const event = JSON.parse(e.data)
+          setCard(prev => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              stamps: event.stampsNow,
+              rewards: event.rewardUnlocked
+                ? [...prev.rewards, { id: Date.now(), label: event.rewardLabel ?? '', isUsed: false, expiresAt: null }]
+                : prev.rewards,
+            }
+          })
+          fetchDataRef.current()
+          setStampFlash(true)
+          setTimeout(() => setStampFlash(false), 1200)
+          setCard(prev => {
+            const soundUrl = prev?.program?.notificationSoundEnabled !== false
+              ? prev?.program?.notificationSoundUrl : null
+            playSound(soundUrl)
+            return prev
+          })
+          if (event.rewardUnlocked) {
+            toast('🎁 Récompense débloquée !', { duration: 4000, style: { background: '#7B2FBE', color: '#fff', fontWeight: 'bold' } })
+          } else {
+            toast(`✅ +1 tampon — ${event.stampsNow}/${event.stampsRequired}`, { duration: 3000, style: { background: '#1a1a1a', color: '#CCFF00', fontWeight: 'bold' } })
           }
-        })
-        // Refresh full data to get updated stamps history
-        fetchData()
-        // Visual flash + toast notification
-        setStampFlash(true)
-        setTimeout(() => setStampFlash(false), 1200)
-        // Play notification sound
-        setCard(prev => {
-          const soundUrl = prev?.program?.notificationSoundEnabled !== false
-            ? prev?.program?.notificationSoundUrl
-            : null
-          playSound(soundUrl)
-          return prev
-        })
-        if (event.rewardUnlocked) {
-          toast('🎁 Récompense débloquée !', { duration: 4000, style: { background: '#7B2FBE', color: '#fff', fontWeight: 'bold' } })
-        } else {
-          toast(`✅ +1 tampon — ${event.stampsNow}/${event.stampsRequired}`, { duration: 3000, style: { background: '#1a1a1a', color: '#CCFF00', fontWeight: 'bold' } })
-        }
-      } catch {}
-    })
+        } catch {}
+      })
 
-    es.onerror = () => {
-      // SSE will auto-reconnect on error — nothing to do
+      es.onerror = () => {
+        es?.close()
+        es = null
+        // Exponential backoff: 1s → 2s → 4s → 8s → max 30s
+        retryTimeout = setTimeout(() => {
+          retryDelay = Math.min(retryDelay * 2, 30_000)
+          connect()
+        }, retryDelay)
+      }
     }
 
-    return () => es.close()
-  }, [fetchData])
+    function handleVisibility() {
+      if (document.hidden) {
+        // Close SSE when tab goes background — saves server connections
+        es?.close()
+        es = null
+        if (retryTimeout) clearTimeout(retryTimeout)
+      } else {
+        // Reconnect immediately when tab comes back
+        if (!es || es.readyState === EventSource.CLOSED) {
+          retryDelay = 1000
+          connect()
+        }
+      }
+    }
+
+    connect()
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      es?.close()
+      if (retryTimeout) clearTimeout(retryTimeout)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [])   // ← empty deps: connects once, never recreated
 
   // ── SW message listener (push sound when page is open) ───────────────────
   useEffect(() => {
@@ -376,19 +411,32 @@ export default function CartePage() {
     } catch {}
   }, [])
 
-  // Countdown ticker
+  // Countdown ticker — paused when tab is hidden to save CPU/battery
   useEffect(() => {
-    const id = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          // Trigger immediate refresh when expired
-          refreshQr()
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(id)
+    let id: ReturnType<typeof setInterval> | null = null
+
+    function startTicker() {
+      if (id) return
+      id = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) { refreshQr(); return 0 }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    function stopTicker() {
+      if (id) { clearInterval(id); id = null }
+    }
+    function handleVisibility() {
+      document.hidden ? stopTicker() : startTicker()
+    }
+
+    if (!document.hidden) startTicker()
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      stopTicker()
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [refreshQr])
 
   useEffect(() => {

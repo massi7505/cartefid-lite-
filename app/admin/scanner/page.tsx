@@ -6,7 +6,17 @@ import toast from 'react-hot-toast'
 
 const QrScanner = dynamic(() => import('@/components/client/QrScanner'), { ssr: false })
 
-// ── Scan sound ────────────────────────────────────────────────────────────────
+// ── Scan sound — singleton AudioContext to avoid GC churn ────────────────────
+let _audioCtx: AudioContext | null = null
+function getAudioCtx(): AudioContext | null {
+  if (_audioCtx && _audioCtx.state !== 'closed') return _audioCtx
+  try {
+    _audioCtx = new (window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    return _audioCtx
+  } catch { return null }
+}
+
 function playScanBeep(customUrl?: string | null) {
   if (customUrl) {
     try {
@@ -16,9 +26,10 @@ function playScanBeep(customUrl?: string | null) {
     } catch {}
     return
   }
-  // Default beep via Web Audio API
+  // Default beep via singleton Web Audio context
   try {
-    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    const ctx = getAudioCtx()
+    if (!ctx) return
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.connect(gain)
@@ -364,6 +375,25 @@ function ShortCodeInput({ onSubmit }: { onSubmit: (code: string) => void }) {
 function QrTab({ onScan }: { onScan: (token: string) => void }) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // ── Pre-warm: kick off permission + module load before user taps ────────────
+  useEffect(() => {
+    // Pre-import jsQR in idle time (fallback for non-BarcodeDetector browsers)
+    const schedulePreload = () => {
+      if (!('BarcodeDetector' in window)) {
+        import('jsqr').catch(() => {})
+      }
+    }
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(schedulePreload, { timeout: 2000 })
+    } else {
+      setTimeout(schedulePreload, 500)
+    }
+    // Eagerly trigger permission dialog if already authorized (fast path)
+    if (localStorage.getItem('cameraAuthorized') === 'true') {
+      navigator.mediaDevices?.getUserMedia({ video: true }).catch(() => {})
+    }
+  }, [])
 
   // Auto-start if camera was previously authorized, or on touch devices
   useEffect(() => {
