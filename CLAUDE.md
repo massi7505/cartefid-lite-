@@ -132,7 +132,7 @@ fetch('/api/...')
 - `themeColor` / `backgroundColor` have ZERO relation to `cardColor1` / `cardColor2`.
 - NEVER synchronize PWA colors with card colors automatically.
 - `/admin/pwa` is ADMIN-ONLY — add to `ADMIN_ONLY` array in middleware.
-- The old `parametres` page PWA tab now redirects to `/admin/pwa` — do not revert.
+- The `parametres` page PWA tab is **fully removed** (not a redirect, not a tab). `/admin/pwa` is the only entry point. Do not add PWA back to parametres.
 
 ### Admin Route Access Control
 ADMIN_ONLY routes (staff cannot access) — always keep this list updated in `middleware.ts`:
@@ -140,6 +140,24 @@ ADMIN_ONLY routes (staff cannot access) — always keep this list updated in `mi
 /admin/parametres, /admin/programme, /admin/promotions,
 /admin/qrcodes, /admin/staff, /admin/pwa
 ```
+
+### Zod — Always add `.nullable()` on optional fields sent as null
+Frontend often sends `null` for empty optional fields (`field || null`). Zod `.optional()` only accepts `undefined`, NOT `null`. Always add `.nullable()` on optional fields in POST/PATCH schemas.
+```typescript
+// BAD — rejects null → "Invalid input" 400
+imageUrl: z.string().url().optional().or(z.literal(''))
+
+// GOOD — accepts null, undefined, '', or valid URL
+imageUrl: z.string().url().max(500).optional().nullable().or(z.literal(''))
+couponCode: z.string().max(191).optional().nullable().or(z.literal(''))
+```
+**Incident:** Promotions POST returned "Invalid input" because the frontend sent `{ couponCode: null }` but Zod didn't have `.nullable()`. The PATCH route (which worked) already had `.nullable()` — always match POST schema to PATCH schema for optional fields.
+
+### PWA Manifest — Icons
+- **MIME type**: Always detect from URL extension — never hardcode `'image/png'` for uploaded logos (can be JPEG/WebP from Cloudinary).
+- **`purpose`**: Use `'any'` for user-uploaded logos. NEVER use `'any maskable'` or `'maskable'` on logos without explicit maskable padding — it crops the image with a 40% safe-zone, hiding the logo.
+- **`apple-touch-icon`**: Do NOT hardcode `<link rel="apple-touch-icon" href="/icons/icon-192.png" />` in layout.tsx. Use `generateMetadata()` with `icons: { apple: logoUrl }` instead. A hardcoded link to a missing file (404) overrides the dynamic metadata.
+- **`public/icons/`** folder is empty — fallback icons don't exist. If `pwa.logoUrl` is not set, the manifest returns icon paths that 404. Always configure a logo in `/admin/pwa`.
 
 ### Validation
 All API route inputs validated with Zod. Pattern: parse at top of handler, catch `ZodError` for 400 response.
@@ -210,6 +228,8 @@ Loyalty stamp system. The merchant configures their program: how many purchases 
 - Dark green mobile UI for clients
 - Email templates (welcome, stamp, reward)
 - PWA manifest + service worker
+- `/admin/pwa` — fully configurable PWA settings (name, colors, logo, splash, offline message, install prompt). Independent `PwaSettings` table. Live iOS/Android mockup. Dynamic `/api/manifest` route.
+- `/admin/promotions` — create/edit/delete promos with image upload (file upload + URL field), coupon code, CTA button, expiry date, active toggle
 
 ### Pending / TODO
 - Promotional space (merchant broadcasts images/GIFs to clients)
