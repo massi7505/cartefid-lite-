@@ -3,11 +3,10 @@
 import { useEffect, useState, useRef } from 'react'
 import toast from 'react-hot-toast'
 
-type Tab = 'branding' | 'liens' | 'smtp' | 'pwa' | 'notifications' | 'emails'
+type Tab = 'branding' | 'liens' | 'smtp' | 'notifications' | 'emails'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'branding',      label: 'Branding' },
-  { key: 'pwa',           label: 'PWA' },
   { key: 'liens',         label: 'Liens rapides' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'emails',        label: 'Emails' },
@@ -100,14 +99,6 @@ export default function ParametresPage() {
   const [branding, setBranding] = useState({ logoUrl: null as string | null, faviconUrl: null as string | null, appTitle: '' })
   const [savingBranding, setSavingBranding] = useState(false)
 
-  const [pwa, setPwa] = useState({
-    pwaEnabled: true,
-    pwaShortName: '',
-    appName: '',
-    cardColor1: '#0D0D0D',
-  })
-  const [savingPwa, setSavingPwa] = useState(false)
-
   const [liens, setLiens] = useState({ phoneNumber: '', uberEatsUrl: '', deliverooUrl: '' })
   const [savingLiens, setSavingLiens] = useState(false)
 
@@ -151,12 +142,6 @@ export default function ParametresPage() {
         setProgramId(p.id)
         setBranding({ logoUrl: p.logoUrl ?? null, faviconUrl: p.faviconUrl ?? null, appTitle: p.name ?? '' })
         setLiens({ phoneNumber: p.phoneNumber ?? '', uberEatsUrl: p.uberEatsUrl ?? '', deliverooUrl: p.deliverooUrl ?? '' })
-        setPwa({
-          pwaEnabled: p.pwaEnabled ?? true,
-          pwaShortName: p.pwaShortName ?? '',
-          appName: p.name ?? '',
-          cardColor1: p.cardColor1 ?? '#0D0D0D',
-        })
         setNotifs({
           notificationSoundUrl: p.notificationSoundUrl ?? null,
           notificationSoundEnabled: p.notificationSoundEnabled ?? true,
@@ -198,18 +183,6 @@ export default function ParametresPage() {
     })
     if (ok) toast.success('Branding sauvegardé !'); else toast.error('Erreur')
     setSavingBranding(false)
-  }
-
-  async function savePwaSettings(e: React.FormEvent) {
-    e.preventDefault()
-    setSavingPwa(true)
-    const ok = await patchProgram({
-      pwaEnabled: pwa.pwaEnabled,
-      pwaShortName: pwa.pwaShortName || null,
-      name: pwa.appName || undefined,
-    })
-    if (ok) toast.success('Configuration PWA sauvegardée !'); else toast.error('Erreur')
-    setSavingPwa(false)
   }
 
   async function saveLiens(e: React.FormEvent) {
@@ -376,40 +349,6 @@ export default function ParametresPage() {
             {savingBranding ? 'Sauvegarde...' : 'Sauvegarder le branding'}
           </button>
         </form>
-      )}
-
-      {/* ── PWA ── */}
-      {tab === 'pwa' && (
-        <div className="space-y-4">
-          <div className="rounded-2xl p-8 text-center border border-indigo-100"
-            style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-              style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2"/>
-                <line x1="12" y1="18" x2="12.01" y2="18"/>
-                <path d="M9 7h6M9 11h4"/>
-              </svg>
-            </div>
-            <h3 className="font-black text-lg mb-2" style={{ color: '#2B3674' }}>
-              Configuration PWA avancée
-            </h3>
-            <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: '#A3AED0' }}>
-              Nom de l&apos;app, couleurs du thème indépendantes, icônes, splash screen,
-              message hors-ligne — avec prévisualisation en temps réel iOS &amp; Android.
-            </p>
-            <a
-              href="/admin/pwa"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}
-            >
-              Ouvrir les paramètres PWA
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </a>
-          </div>
-        </div>
       )}
 
       {/* ── Liens rapides ── */}

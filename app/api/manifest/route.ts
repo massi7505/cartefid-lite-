@@ -22,16 +22,25 @@ export async function GET() {
     const iconUrl    = pwa?.logoUrl       ?? null
     const splashUrl  = pwa?.splashUrl     ?? iconUrl
 
+    function mimeFromUrl(url: string): string {
+      if (/\.webp(\?|$)/i.test(url)) return 'image/webp'
+      if (/\.(jpg|jpeg)(\?|$)/i.test(url)) return 'image/jpeg'
+      if (/\.svg(\?|$)/i.test(url)) return 'image/svg+xml'
+      if (/\.gif(\?|$)/i.test(url)) return 'image/gif'
+      return 'image/png'
+    }
+
     const icons = iconUrl
-      ? [
-          { src: iconUrl, sizes: '72x72',  type: 'image/png' },
-          { src: iconUrl, sizes: '96x96',  type: 'image/png' },
-          { src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-          { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-        ]
+      ? (() => {
+          const mime = mimeFromUrl(iconUrl)
+          return [
+            { src: iconUrl, sizes: '192x192', type: mime, purpose: 'any' },
+            { src: iconUrl, sizes: '512x512', type: mime, purpose: 'any' },
+          ]
+        })()
       : [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
         ]
 
     const manifest = {
@@ -62,7 +71,7 @@ export async function GET() {
           short_name: 'Carte',
           description: 'Voir ma carte de fidélité',
           url: '/carte',
-          icons: [{ src: iconUrl ?? '/icons/icon-192.png', sizes: '192x192' }],
+          icons: [{ src: iconUrl ?? '/icons/icon-192.png', sizes: '192x192', type: iconUrl ? mimeFromUrl(iconUrl) : 'image/png' }],
         },
       ],
     }

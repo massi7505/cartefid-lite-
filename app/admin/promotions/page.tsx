@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import toast from 'react-hot-toast'
 
 interface Promotion {
@@ -35,6 +35,24 @@ export default function PromotionsPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleImageUpload(file: File) {
+    setUploadingImage(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+    if (res.ok) {
+      const data = await res.json()
+      setForm(f => ({ ...f, imageUrl: data.url }))
+      toast.success('Image uploadée !')
+    } else {
+      const data = await res.json().catch(() => ({}))
+      toast.error(data.error || 'Erreur upload')
+    }
+    setUploadingImage(false)
+  }
 
   const fetchPromotions = useCallback(async () => {
     const res = await fetch('/api/admin/promotions')
@@ -195,14 +213,40 @@ export default function PromotionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    value={form.imageUrl}
-                    onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="https://..."
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={form.imageUrl}
+                      onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="https://... ou uploader ci-contre"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="flex-shrink-0 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 hover:border-gray-400 transition disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {uploadingImage ? 'Upload...' : form.imageUrl ? 'Changer' : '📎 Uploader'}
+                    </button>
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = '' }}
+                    />
+                  </div>
+                  {form.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, imageUrl: '' }))}
+                      className="text-xs text-red-500 hover:text-red-700 mt-1 transition"
+                    >
+                      Supprimer l&apos;image
+                    </button>
+                  )}
                 </div>
 
                 {/* Coupon code */}

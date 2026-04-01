@@ -6,11 +6,11 @@ import { z } from 'zod'
 
 const createSchema = z.object({
   title:       z.string().min(1).max(191),
-  description: z.string().optional(),
-  imageUrl:    z.string().url().max(500).optional().or(z.literal('')),
-  couponCode:  z.string().max(191).optional().or(z.literal('')),
-  buttonLabel: z.string().max(191).optional().or(z.literal('')),
-  buttonUrl:   z.string().url().max(500).optional().or(z.literal('')),
+  description: z.string().optional().nullable(),
+  imageUrl:    z.string().url().max(500).optional().nullable().or(z.literal('')),
+  couponCode:  z.string().max(191).optional().nullable().or(z.literal('')),
+  buttonLabel: z.string().max(191).optional().nullable().or(z.literal('')),
+  buttonUrl:   z.string().url().max(500).optional().nullable().or(z.literal('')),
   active:      z.boolean().optional().default(true),
   expiresAt:   z.string().datetime().optional().nullable(),
 })
