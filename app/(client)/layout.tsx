@@ -4,6 +4,9 @@ import { redirect } from 'next/navigation'
 import ClientNav from '@/components/client/ClientNav'
 import { prisma } from '@/lib/prisma'
 
+// Always render fresh — theme changes from admin must appear immediately
+export const dynamic = 'force-dynamic'
+
 const DEFAULTS = {
   bgMain: '#0D0D0D', bgSurface: '#141414', bgSurfaceBorder: 'rgba(255,255,255,0.06)',
   headerBg: '#111111', headerText: '#FFFFFF', headerIcon: 'rgba(255,255,255,0.6)',

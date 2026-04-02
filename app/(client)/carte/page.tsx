@@ -171,9 +171,9 @@ function QrModal({ qrValue, programName, shortCode, countdown, countdownColor, o
 }
 
 // ── StampGrid ─────────────────────────────────────────────────────────────────
-function StampGrid({ stamps, required, icon, iconUrl, shape, accentColor, textColor }: {
+function StampGrid({ stamps, required, icon, iconUrl, shape, accentColor, textColor, newStampIdx }: {
   stamps: number; required: number; icon: string; iconUrl?: string | null; shape: StampShape
-  accentColor: string; textColor: string
+  accentColor: string; textColor: string; newStampIdx?: number | null
 }) {
   const cols = required <= 5 ? required : required <= 8 ? 4 : 5
   const radius = getStampRadius(shape)
@@ -183,8 +183,9 @@ function StampGrid({ stamps, required, icon, iconUrl, shape, accentColor, textCo
       {Array.from({ length: required }).map((_, i) => {
         const filled = i < stamps
         const isLast = i === required - 1
+        const isNew = newStampIdx === i
         return (
-          <div key={i} className={`aspect-square ${radius} flex items-center justify-center transition-all duration-300`}
+          <div key={i} className={`aspect-square ${radius} flex items-center justify-center transition-all duration-300 ${isNew ? 'animate-stamp-pop' : ''}`}
             style={
               isLast
                 ? filled
@@ -217,6 +218,7 @@ export default function CartePage() {
   const [loading, setLoading] = useState(true)
   const [showQrModal, setShowQrModal] = useState(false)
   const [stampFlash, setStampFlash] = useState(false)
+  const [newStampIdx, setNewStampIdx] = useState<number | null>(null)
   const [pushState, setPushState] = useState<PushState>('default')
   const [pushLoading, setPushLoading] = useState(false)
 
@@ -268,7 +270,11 @@ export default function CartePage() {
           })
           fetchDataRef.current()
           setStampFlash(true)
-          setTimeout(() => setStampFlash(false), 1200)
+          // Animate the newly-filled stamp cell
+          if (!event.rewardUnlocked && event.stampsNow > 0) {
+            setNewStampIdx(event.stampsNow - 1)
+          }
+          setTimeout(() => { setStampFlash(false); setNewStampIdx(null) }, 1200)
           setCard(prev => {
             const soundUrl = prev?.program?.notificationSoundEnabled !== false
               ? prev?.program?.notificationSoundUrl : null
@@ -598,6 +604,7 @@ export default function CartePage() {
                 icon={cardIcon} iconUrl={cardIconUrl}
                 shape={stampShape as StampShape}
                 accentColor={accentColor} textColor={tc}
+                newStampIdx={newStampIdx}
               />
             </div>
 

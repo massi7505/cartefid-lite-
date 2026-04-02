@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 const colorValue = z.string().max(80).regex(/^(#[0-9A-Fa-f]{3,8}|rgba?\([\d.,\s%]+\)|[a-z]+)$/, 'Couleur CSS invalide')
@@ -74,6 +75,11 @@ export async function POST(req: NextRequest) {
     const theme = existing
       ? await prisma.themeSettings.update({ where: { id: existing.id }, data: body })
       : await prisma.themeSettings.create({ data: body })
+    // Invalidate client layout cache so colors update immediately
+    revalidatePath('/carte')
+    revalidatePath('/historique')
+    revalidatePath('/profil')
+    revalidatePath('/offres')
     return NextResponse.json(theme)
   } catch (error) {
     if (error instanceof z.ZodError) {

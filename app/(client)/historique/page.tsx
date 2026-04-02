@@ -126,12 +126,16 @@ export default function HistoriquePage() {
   }
 
   const rewards = card?.rewards ?? []
-  const availableRewards = rewards.filter(r => !r.isUsed && !(r.expiresAt && new Date(r.expiresAt) < new Date()))
-  const usedOrExpired = rewards.filter(r => r.isUsed || (r.expiresAt && new Date(r.expiresAt) < new Date()))
 
   const filteredStamps = stamps.filter(s =>
     !search || s.card.program.name.toLowerCase().includes(search.toLowerCase()) || (s.note ?? '').toLowerCase().includes(search.toLowerCase())
   )
+
+  const filteredRewards = rewards.filter(r =>
+    !search || r.label.toLowerCase().includes(search.toLowerCase())
+  )
+  const availableRewards = filteredRewards.filter(r => !r.isUsed && !(r.expiresAt && new Date(r.expiresAt) < new Date()))
+  const usedOrExpired = filteredRewards.filter(r => r.isUsed || (r.expiresAt && new Date(r.expiresAt) < new Date()))
 
   return (
     <div className="min-h-screen px-4 sm:px-6 py-6 pb-10" style={{ background: '#0D0D0D' }}>
@@ -165,8 +169,8 @@ export default function HistoriquePage() {
       <div className="flex rounded-xl p-1 mb-5" style={{ background: '#141414' }}>
         {([
           { key: 'progress', label: 'Ma carte' },
-          { key: 'stamps',   label: `Tampons (${stamps.length})` },
-          { key: 'rewards',  label: `Récompenses (${rewards.length})` },
+          { key: 'stamps',   label: search ? `Tampons (${filteredStamps.length})` : `Tampons (${stamps.length})` },
+          { key: 'rewards',  label: search ? `Récompenses (${filteredRewards.length})` : `Récompenses (${rewards.length})` },
         ] as const).map(t => (
           <button
             key={t.key}
@@ -277,11 +281,11 @@ export default function HistoriquePage() {
       {tab === 'rewards' && (
         <div className="space-y-4">
 
-          {rewards.length === 0 ? (
+          {filteredRewards.length === 0 ? (
             <div className="text-center py-16 text-white/30">
               <div className="text-4xl mb-3">🎁</div>
-              <p className="text-sm">Aucune récompense encore</p>
-              <p className="text-xs mt-1 text-white/20">Collectez vos tampons pour en débloquer</p>
+              <p className="text-sm">{search ? 'Aucun résultat' : 'Aucune récompense encore'}</p>
+              {!search && <p className="text-xs mt-1 text-white/20">Collectez vos tampons pour en débloquer</p>}
             </div>
           ) : (
             <>
