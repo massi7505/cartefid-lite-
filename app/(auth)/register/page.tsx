@@ -1,15 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
-const LIME = '#CCFF00'
 const INPUT_STYLE = {
   background: 'rgba(255,255,255,0.05)',
   border: '1px solid rgba(255,255,255,0.1)',
+}
+
+function readBrandingScript(): { name: string; logoUrl: string | null } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const el = document.getElementById('__branding__')
+    return el ? JSON.parse(el.textContent ?? '') : null
+  } catch { return null }
 }
 
 export default function RegisterPage() {
@@ -17,6 +24,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', phone: '' })
+  const [branding, setBranding] = useState<{ name: string; logoUrl: string | null } | null>(readBrandingScript)
+
+  useEffect(() => {
+    if (!branding) {
+      fetch('/api/branding').then(r => r.json()).then(setBranding).catch(() => {})
+    }
+  }, [branding])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -59,25 +73,36 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg-main)' }}>
       <div className="w-full max-w-sm">
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-black text-2xl mb-4"
-            style={{ background: LIME }}
-          >
-            S
-          </div>
-          <h1 className="text-white text-2xl font-bold">Créer un compte</h1>
-          <p className="text-white/40 text-sm mt-1">Rejoignez notre programme de fidélité</p>
+          {branding?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="w-14 h-14 rounded-2xl object-contain mb-4"
+              style={{ background: 'var(--logo-accent)' }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          ) : (
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl mb-4"
+              style={{ background: 'var(--logo-accent)', color: 'var(--cta-text)' }}
+            >
+              {branding?.name?.[0]?.toUpperCase() ?? 'S'}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Créer un compte</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Rejoignez notre programme de fidélité</p>
         </div>
 
         {/* Form card */}
         <div
           className="rounded-2xl p-6"
-          style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-border)' }}
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
@@ -155,17 +180,17 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-sm text-black transition disabled:opacity-50"
-              style={{ background: LIME }}
+              className="w-full py-3 rounded-xl font-bold text-sm transition disabled:opacity-50"
+              style={{ background: 'var(--cta-bg)', color: 'var(--cta-text)' }}
             >
               {loading ? 'Création du compte…' : 'Créer mon compte'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-sm text-white/40 mt-4">
+        <p className="text-center text-sm mt-4" style={{ color: 'var(--text-muted)' }}>
           Déjà un compte ?{' '}
-          <Link href="/login" className="font-semibold hover:underline" style={{ color: LIME }}>
+          <Link href="/login" className="font-semibold hover:underline" style={{ color: 'var(--logo-accent)' }}>
             Se connecter
           </Link>
         </p>

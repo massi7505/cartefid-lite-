@@ -26,6 +26,7 @@ interface Program {
   cardSubtitle: string
   cardNote?: string | null
   cardBgImageUrl?: string | null
+  cardIconUrl?: string | null
   emailVerificationEnabled: boolean
   otpValidityMinutes: number
   rewardExpiryDays: number | null
@@ -60,8 +61,8 @@ function getStampRadius(shape: StampShape) {
 }
 
 // ── Card preview ─────────────────────────────────────────────────────────────
-function CardPreview({ name, subtitle, icon, stamps, required, color1, color2, accent, shape, logoUrl, textColor, bgImageUrl }: {
-  name: string; subtitle: string; icon: string; stamps: number; required: number
+function CardPreview({ name, subtitle, icon, iconUrl, stamps, required, color1, color2, accent, shape, logoUrl, textColor, bgImageUrl }: {
+  name: string; subtitle: string; icon: string; iconUrl?: string | null; stamps: number; required: number
   color1: string; color2: string; accent: string; shape: StampShape
   logoUrl?: string | null; textColor: string; bgImageUrl?: string | null
 }) {
@@ -115,7 +116,13 @@ function CardPreview({ name, subtitle, icon, stamps, required, color1, color2, a
                       ? filled ? { background: accent } : { border: `1.5px dashed ${tc}30`, background: `${tc}08` }
                       : filled ? { background: `${tc}25` } : { background: `${tc}08`, border: `1px solid ${tc}20` }
                   }>
-                  {isLast ? <span className="text-xs">🎁</span> : filled ? <span className="text-xs">{icon}</span> : null}
+                  {isLast
+                ? <span className="text-xs">🎁</span>
+                : filled
+                ? iconUrl
+                  ? <img src={iconUrl} alt="" className="w-4 h-4 object-contain" />
+                  : <span className="text-xs">{icon}</span>
+                : null}
                 </div>
               )
             })}
@@ -169,7 +176,6 @@ function UploadField({ label, hint, value, onUploaded, onRemove, accept }: {
   label: string; hint: string; value: string | null
   onUploaded: (url: string) => void; onRemove: () => void; accept: string
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
   async function handleFile(file: File) {
@@ -177,14 +183,15 @@ function UploadField({ label, hint, value, onUploaded, onRemove, accept }: {
     const fd = new FormData()
     fd.append('file', file)
     const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    if (res.ok) {
-      const data = await res.json()
-      onUploaded(data.url)
-      toast.success('Image uploadée !')
-    } else {
+    if (!res.ok) {
       const data = await res.json().catch(() => ({}))
       toast.error(data.error || 'Erreur upload')
+      setUploading(false)
+      return
     }
+    const data = await res.json()
+    onUploaded(data.url)
+    toast.success('Fichier uploadé !')
     setUploading(false)
   }
 
@@ -207,13 +214,26 @@ function UploadField({ label, hint, value, onUploaded, onRemove, accept }: {
               Supprimer
             </button>
           )}
-          <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition disabled:opacity-50">
-            {uploading ? '...' : value ? 'Changer' : 'Choisir'}
-          </button>
+          {/* label wraps input — guaranteed to open file picker on all browsers */}
+          <label className={`px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition cursor-pointer select-none ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            {uploading ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+                Upload...
+              </span>
+            ) : value ? 'Changer' : 'Choisir'}
+            <input
+              type="file"
+              accept={accept}
+              className="hidden"
+              onChange={e => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (f) handleFile(f)
+              }}
+            />
+          </label>
         </div>
-        <input ref={inputRef} type="file" accept={accept} className="hidden"
-          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = '' }} />
       </div>
     </div>
   )
@@ -240,6 +260,7 @@ export default function ProgrammePage() {
     cardSubtitle: 'Carte Fidélité',
     cardNote: '',
     cardBgImageUrl: null as string | null,
+    cardIconUrl: null as string | null,
   })
   const [savingCarte, setSavingCarte] = useState(false)
 
@@ -262,6 +283,7 @@ export default function ProgrammePage() {
           cardSubtitle: p.cardSubtitle ?? 'Carte Fidélité',
           cardNote: p.cardNote ?? '',
           cardBgImageUrl: p.cardBgImageUrl ?? null,
+          cardIconUrl: p.cardIconUrl ?? null,
         })
       }
       setLoading(false)
@@ -288,7 +310,7 @@ export default function ProgrammePage() {
   async function saveCarte(e: React.FormEvent) {
     e.preventDefault()
     setSavingCarte(true)
-    const ok = await patch({ ...carte, cardBgImageUrl: carte.cardBgImageUrl || null })
+    const ok = await patch({ ...carte, cardBgImageUrl: carte.cardBgImageUrl || null, cardIconUrl: carte.cardIconUrl || null })
     if (ok) toast.success('Carte mise à jour !'); else toast.error('Erreur')
     setSavingCarte(false)
   }
@@ -524,22 +546,62 @@ export default function ProgrammePage() {
               {/* Icon */}
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-3">
-                  Icône <span className="ml-1 text-xl">{carte.cardIcon}</span>
+                  Icône{' '}
+                  {carte.cardIconUrl
+                    ? <img src={carte.cardIconUrl} alt="" className="inline w-5 h-5 object-contain align-middle ml-1" />
+                    : <span className="ml-1 text-xl">{carte.cardIcon}</span>
+                  }
                 </p>
-                <div className="grid grid-cols-10 gap-1.5 mb-3">
-                  {ICON_LIST.map(ic => (
-                    <button key={ic} type="button" onClick={() => setCarte(f => ({ ...f, cardIcon: ic }))}
-                      className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition hover:bg-gray-100 ${
-                        carte.cardIcon === ic ? 'bg-gray-900 ring-2 ring-gray-900 ring-offset-1' : 'bg-gray-50'
-                      }`}
-                    >{ic}</button>
-                  ))}
+
+                {/* Upload SVG / GIF */}
+                <div className="mb-4 p-3 rounded-xl border border-dashed border-gray-200 bg-gray-50">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Icône personnalisée (SVG, GIF animé)</p>
+                  {carte.cardIconUrl ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl border border-gray-200 bg-white flex items-center justify-center p-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={carte.cardIconUrl} alt="Icône" className="w-full h-full object-contain" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-600 truncate">{carte.cardIconUrl.split('/').pop()}</p>
+                        <p className="text-xs text-gray-400">Utilisée à la place de l&apos;emoji</p>
+                      </div>
+                      <button type="button"
+                        onClick={() => setCarte(f => ({ ...f, cardIconUrl: null }))}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition flex-shrink-0">
+                        Supprimer
+                      </button>
+                    </div>
+                  ) : (
+                    <UploadField
+                      label="Icône SVG ou GIF"
+                      hint="SVG vectoriel ou GIF animé · max 5 Mo"
+                      value={null}
+                      onUploaded={url => setCarte(f => ({ ...f, cardIconUrl: url }))}
+                      onRemove={() => setCarte(f => ({ ...f, cardIconUrl: null }))}
+                      accept="image/svg+xml,image/gif"
+                    />
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500">Emoji personnalisé :</span>
-                  <input type="text" value={carte.cardIcon}
-                    onChange={e => { const v = e.target.value; if (v) setCarte(f => ({ ...f, cardIcon: v.slice(-2) })) }}
-                    className="w-14 px-2 py-1.5 text-center text-lg rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+
+                {/* Emoji fallback — disabled if iconUrl is set */}
+                <div className={carte.cardIconUrl ? 'opacity-40 pointer-events-none' : ''}>
+                  <p className="text-xs text-gray-400 mb-2">Ou choisir un emoji :</p>
+                  <div className="grid grid-cols-10 gap-1.5 mb-3">
+                    {ICON_LIST.map(ic => (
+                      <button key={ic} type="button" onClick={() => setCarte(f => ({ ...f, cardIcon: ic }))}
+                        className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition hover:bg-gray-100 ${
+                          carte.cardIcon === ic ? 'bg-gray-900 ring-2 ring-gray-900 ring-offset-1' : 'bg-gray-50'
+                        }`}
+                      >{ic}</button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500">Emoji personnalisé :</span>
+                    <input type="text" value={carte.cardIcon}
+                      onChange={e => { const v = e.target.value; if (v) setCarte(f => ({ ...f, cardIcon: v.slice(-2) })) }}
+                      className="w-14 px-2 py-1.5 text-center text-lg rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  </div>
                 </div>
               </div>
 
@@ -577,6 +639,7 @@ export default function ProgrammePage() {
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Aperçu</p>
               <CardPreview
                 name={prog.name} subtitle={carte.cardSubtitle} icon={carte.cardIcon}
+                iconUrl={carte.cardIconUrl}
                 stamps={previewStamps} required={prog.stampsRequired}
                 color1={carte.cardColor1} color2={carte.cardColor2} accent={carte.accentColor}
                 shape={carte.stampShape} logoUrl={program?.logoUrl}

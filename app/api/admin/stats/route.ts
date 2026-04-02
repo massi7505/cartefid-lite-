@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF')) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
     }
 
@@ -31,6 +31,7 @@ export async function GET() {
       totalCards,
       cardsWithRewards,
       recentStamps,
+      topClients,
     ] = await Promise.all([
       prisma.user.count({ where: { role: 'CLIENT' } }),
       prisma.user.count({ where: { role: 'CLIENT', createdAt: { gte: startOfToday } } }),
@@ -47,6 +48,16 @@ export async function GET() {
         take: 8,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { name: true, email: true } } },
+      }),
+      prisma.loyaltyCard.findMany({
+        take: 10,
+        orderBy: { stamps: 'desc' },
+        where: { user: { role: 'CLIENT' } },
+        select: {
+          stamps: true,
+          user: { select: { id: true, name: true, email: true } },
+          rewards: { select: { id: true } },
+        },
       }),
     ])
 
@@ -77,6 +88,7 @@ export async function GET() {
         count: Number(d.count),
       })),
       recentStamps,
+      topClients,
     }, {
       headers: { 'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60' },
     })

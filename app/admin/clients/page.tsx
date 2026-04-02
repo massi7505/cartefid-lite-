@@ -8,6 +8,7 @@ interface ClientRow {
   name: string
   email: string
   phone?: string
+  isBlocked: boolean
   createdAt: string
   cards: Array<{ stamps: number; rewards: Array<{ id: number }> }>
 }
@@ -17,6 +18,7 @@ interface ClientDetail {
   name: string
   email: string
   phone?: string
+  isBlocked: boolean
   createdAt: string
   cards: Array<{
     id: number
@@ -48,6 +50,7 @@ export default function ClientsPage() {
   const [detailLoading, setDetailLoading] = useState(false)
   const [addingStamp, setAddingStamp] = useState(false)
   const [removingStamp, setRemovingStamp] = useState(false)
+  const [blockingId, setBlockingId] = useState<number | null>(null)
   const [stampNote, setStampNote] = useState('')
   const [activeTab, setActiveTab] = useState<'tampons' | 'recompenses'>('tampons')
 
@@ -97,6 +100,25 @@ export default function ClientsPage() {
       fetchClients()
     }
     setAddingStamp(false)
+  }
+
+  async function handleToggleBlock() {
+    if (!selected) return
+    setBlockingId(selected.id)
+    const newBlocked = !selected.isBlocked
+    const res = await fetch(`/api/admin/clients/${selected.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isBlocked: newBlocked }),
+    })
+    if (res.ok) {
+      setSelected(s => s ? { ...s, isBlocked: newBlocked } : s)
+      setClients(prev => prev.map(c => c.id === selected.id ? { ...c, isBlocked: newBlocked } : c))
+      toast.success(newBlocked ? 'Client bloqué' : 'Client débloqué')
+    } else {
+      toast.error('Erreur lors du blocage')
+    }
+    setBlockingId(null)
   }
 
   async function handleRemoveStamp() {
@@ -199,7 +221,10 @@ export default function ClientsPage() {
 
                   {/* Info + progress */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{client.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{client.name}</p>
+                      {client.isBlocked && <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full flex-shrink-0">Bloqué</span>}
+                    </div>
                     <p className="text-xs text-gray-500 truncate mb-1.5">{client.email}</p>
                     {/* Progress bar */}
                     <div className="flex items-center gap-2">
@@ -256,6 +281,7 @@ export default function ClientsPage() {
                           {client.name[0]?.toUpperCase()}
                         </div>
                         <span className="text-sm font-medium text-gray-900">{client.name}</span>
+                        {client.isBlocked && <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">Bloqué</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{client.email}</td>
@@ -325,8 +351,11 @@ export default function ClientsPage() {
                 <div className="w-11 h-11 bg-gray-900 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0">
                   {selected.name[0]?.toUpperCase()}
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-gray-900 truncate">{selected.name}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-gray-900 truncate">{selected.name}</p>
+                    {selected.isBlocked && <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full flex-shrink-0">Bloqué</span>}
+                  </div>
                   <p className="text-xs text-gray-500 truncate">{selected.email}</p>
                 </div>
               </div>
@@ -334,6 +363,21 @@ export default function ClientsPage() {
                 <p className="text-xs text-gray-400 mt-2">📞 {selected.phone}</p>
               )}
               <p className="text-xs text-gray-400 mt-0.5">Inscrit le {fmt(selected.createdAt)}</p>
+              <button
+                onClick={handleToggleBlock}
+                disabled={blockingId === selected.id}
+                className={`mt-3 w-full py-2 rounded-xl text-xs font-semibold border transition disabled:opacity-50 ${
+                  selected.isBlocked
+                    ? 'border-green-200 text-green-700 hover:bg-green-50'
+                    : 'border-red-200 text-red-600 hover:bg-red-50'
+                }`}
+              >
+                {blockingId === selected.id
+                  ? '...'
+                  : selected.isBlocked
+                  ? '✓ Débloquer ce client'
+                  : '⊘ Bloquer ce client'}
+              </button>
             </div>
 
             {/* Stats */}

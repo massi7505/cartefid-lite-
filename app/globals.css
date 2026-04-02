@@ -11,6 +11,33 @@
     --sab: env(safe-area-inset-bottom);
     --sal: env(safe-area-inset-left);
     --sar: env(safe-area-inset-right);
+    /* ── Client theme CSS variables (overridden at runtime by /api/theme) ── */
+    --bg-main: #0D0D0D;
+    --bg-surface: #141414;
+    --bg-surface-border: rgba(255,255,255,0.06);
+    --header-bg: #111111;
+    --header-text: #FFFFFF;
+    --header-icon: rgba(255,255,255,0.6);
+    --avatar-bg: #CCFF00;
+    --logo-accent: #CCFF00;
+    --banner-bg: rgba(123,47,190,0.18);
+    --banner-border: rgba(123,47,190,0.3);
+    --banner-icon-bg: rgba(123,47,190,0.3);
+    --banner-text-title: #FFFFFF;
+    --banner-text-sub: rgba(255,255,255,0.5);
+    --stats-bg: #141414;
+    --stats-border: rgba(255,255,255,0.06);
+    --stats-value: #FFFFFF;
+    --stats-label: rgba(255,255,255,0.4);
+    --stats-accent: #CCFF00;
+    --cta-bg: #CCFF00;
+    --cta-bg-hover: #B8E600;
+    --cta-text: #000000;
+    --cta-subtext: rgba(255,255,255,0.3);
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.7);
+    --text-muted: rgba(255,255,255,0.4);
+    --text-greeting: rgba(255,255,255,0.4);
   }
   html {
     -webkit-tap-highlight-color: transparent;

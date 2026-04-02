@@ -373,16 +373,37 @@ export default function PromotionsPage() {
                           {expired && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Expirée</span>}
                           {!expired && p.active && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>}
                           {!expired && !p.active && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactive</span>}
-                          {p.couponCode && <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-0.5 rounded-full font-mono">{p.couponCode}</span>}
                         </div>
                         {p.description && <p className="text-sm text-gray-600 mt-1">{p.description}</p>}
-                        {p.buttonLabel && p.buttonUrl && (
-                          <p className="text-xs text-blue-600 mt-1">→ {p.buttonLabel}</p>
-                        )}
-                        <div className="flex gap-4 mt-2 text-xs text-gray-400">
-                          <span>Créée le {formatDate(p.createdAt)}</span>
-                          {p.expiresAt && <span className={expired ? 'text-red-500' : ''}>Expire le {formatDate(p.expiresAt)}</span>}
+
+                        {/* Code promo */}
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <span className="text-xs font-medium text-gray-400 w-24 flex-shrink-0">Code promo</span>
+                          {p.couponCode
+                            ? <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-0.5 rounded font-mono tracking-wide">{p.couponCode}</span>
+                            : <span className="text-xs text-gray-300 italic">—</span>
+                          }
                         </div>
+
+                        {/* Expire le */}
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-xs font-medium text-gray-400 w-24 flex-shrink-0">Expire le</span>
+                          {p.expiresAt
+                            ? <span className={`text-xs font-medium ${expired ? 'text-red-500' : 'text-gray-600'}`}>{formatDate(p.expiresAt)}</span>
+                            : <span className="text-xs text-gray-300 italic">—</span>
+                          }
+                        </div>
+
+                        {/* Bouton d'action */}
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-xs font-medium text-gray-400 w-24 flex-shrink-0">Bouton</span>
+                          {p.buttonLabel && p.buttonUrl
+                            ? <a href={p.buttonUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate max-w-[200px]">→ {p.buttonLabel}</a>
+                            : <span className="text-xs text-gray-300 italic">—</span>
+                          }
+                        </div>
+
+                        <p className="text-xs text-gray-300 mt-2">Créée le {formatDate(p.createdAt)}</p>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button

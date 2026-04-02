@@ -30,6 +30,7 @@ const updateSchema = z.object({
   cardSubtitle: z.string().max(191).optional(),
   cardNote: z.string().max(1000).nullable().optional(),
   cardBgImageUrl: z.string().max(500).nullable().optional(),
+  cardIconUrl: z.string().max(500).nullable().optional(),
   // PWA
   pwaEnabled: z.boolean().optional(),
   pwaShortName: z.string().max(100).nullable().optional(),

@@ -1,0 +1,1 @@
+ALTER TABLE `LoyaltyProgram` ADD COLUMN `cardIconUrl` VARCHAR(500) NULL;

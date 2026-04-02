@@ -29,6 +29,7 @@ interface Card {
     cardSubtitle?: string
     cardNote?: string | null
     cardBgImageUrl?: string | null
+    cardIconUrl?: string | null
     logoUrl?: string | null
   }
   rewards: Array<{ id: number; label: string; isUsed: boolean; expiresAt: string | null }>
@@ -170,8 +171,8 @@ function QrModal({ qrValue, programName, shortCode, countdown, countdownColor, o
 }
 
 // ── StampGrid ─────────────────────────────────────────────────────────────────
-function StampGrid({ stamps, required, icon, shape, accentColor, textColor }: {
-  stamps: number; required: number; icon: string; shape: StampShape
+function StampGrid({ stamps, required, icon, iconUrl, shape, accentColor, textColor }: {
+  stamps: number; required: number; icon: string; iconUrl?: string | null; shape: StampShape
   accentColor: string; textColor: string
 }) {
   const cols = required <= 5 ? required : required <= 8 ? 4 : 5
@@ -194,9 +195,11 @@ function StampGrid({ stamps, required, icon, shape, accentColor, textColor }: {
                 : { border: `1.5px dashed ${tc}18`, background: `${tc}05` }
             }>
             {isLast
-              ? <span className="text-lg">{filled ? '🎁' : '🎁'}</span>
+              ? <span className="text-lg">🎁</span>
               : filled
-              ? <span className="text-sm" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}>{icon}</span>
+              ? iconUrl
+                ? <img src={iconUrl} alt="" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }} />
+                : <span className="text-sm" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}>{icon}</span>
               : null
             }
           </div>
@@ -450,7 +453,7 @@ export default function CartePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: '#0D0D0D' }}>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg-main)' }}>
         <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
           style={{ borderColor: `${LIME} transparent ${LIME} ${LIME}` }} />
       </div>
@@ -459,7 +462,7 @@ export default function CartePage() {
 
   if (!card) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6" style={{ background: '#0D0D0D' }}>
+      <div className="flex items-center justify-center min-h-screen p-6" style={{ background: 'var(--bg-main)' }}>
         <div className="text-center">
           <div className="text-5xl mb-4">🃏</div>
           <p className="text-white/40 text-sm">Aucune carte trouvée</p>
@@ -470,7 +473,7 @@ export default function CartePage() {
 
   const { stamps: stampCount, program, rewards, user } = card
   const {
-    cardColor1, cardColor2, accentColor, cardIcon,
+    cardColor1, cardColor2, accentColor, cardIcon, cardIconUrl,
     stampShape = 'rounded', cardTextColor = '#ffffff',
     cardSubtitle = 'Carte Fidélité', cardNote, cardBgImageUrl, logoUrl,
   } = program
@@ -494,13 +497,14 @@ export default function CartePage() {
         />
       )}
 
-      <div className="min-h-screen px-4 sm:px-6 pb-32" style={{ background: '#0D0D0D' }}>
+      <div className="min-h-screen" style={{ background: 'var(--bg-main)' }}>
+      <div className="max-w-lg mx-auto px-4 sm:px-6 pb-32">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between py-5">
           <div>
-            <p className="text-white/40 text-xs">Bonjour</p>
-            <h1 className="text-white text-xl font-bold leading-tight">{user.name}</h1>
+            <p className="text-xs" style={{ color: 'var(--text-greeting)' }}>Bonjour</p>
+            <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{user.name}</h1>
           </div>
           <div className="flex items-center gap-2">
             {/* Bell button */}
@@ -570,7 +574,11 @@ export default function CartePage() {
                     onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                    style={{ background: 'rgba(255,255,255,0.15)' }}>{cardIcon}</div>
+                    style={{ background: 'rgba(255,255,255,0.15)' }}>
+                    {cardIconUrl
+                      ? <img src={cardIconUrl} alt="" className="w-5 h-5 object-contain" />
+                      : cardIcon}
+                  </div>
                 )}
                 <div>
                   <p className="text-xs" style={{ color: `${tc}70` }}>{cardSubtitle}</p>
@@ -587,7 +595,8 @@ export default function CartePage() {
             <div className="px-5 py-4">
               <StampGrid
                 stamps={stampCount} required={program.stampsRequired}
-                icon={cardIcon} shape={stampShape as StampShape}
+                icon={cardIcon} iconUrl={cardIconUrl}
+                shape={stampShape as StampShape}
                 accentColor={accentColor} textColor={tc}
               />
             </div>
@@ -619,14 +628,14 @@ export default function CartePage() {
         {/* ── Pending rewards ── */}
         {pendingRewards.length > 0 && (
           <div className="rounded-2xl p-4 mb-4 flex items-center gap-3"
-            style={{ background: 'rgba(123,47,190,0.18)', border: '1px solid rgba(123,47,190,0.3)' }}>
+            style={{ background: 'var(--banner-bg)', border: '1px solid var(--banner-border)' }}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
-              style={{ background: 'rgba(123,47,190,0.3)' }}>🎁</div>
+              style={{ background: 'var(--banner-icon-bg)' }}>🎁</div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm">
+              <p className="font-semibold text-sm" style={{ color: 'var(--banner-text-title)' }}>
                 {pendingRewards.length} récompense{pendingRewards.length > 1 ? 's' : ''} disponible{pendingRewards.length > 1 ? 's' : ''}
               </p>
-              <p className="text-white/50 text-xs">Présentez votre carte en caisse</p>
+              <p className="text-xs" style={{ color: 'var(--banner-text-sub)' }}>Présentez votre carte en caisse</p>
             </div>
           </div>
         )}
@@ -634,30 +643,30 @@ export default function CartePage() {
         {/* ── Stats ── */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           {[
-            { label: 'Tampons', value: stampCount, color: LIME },
-            { label: 'Objectif', value: program.stampsRequired, color: '#fff' },
+            { label: 'Tampons', value: stampCount, color: 'var(--stats-accent)' },
+            { label: 'Objectif', value: program.stampsRequired, color: 'var(--stats-value)' },
             { label: 'Récompenses', value: rewards.length, color: '#A78BFA' },
           ].map(s => (
             <div key={s.label} className="rounded-2xl p-3.5 text-center"
-              style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: 'var(--stats-bg)', border: '1px solid var(--stats-border)' }}>
               <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
-              <p className="text-white/40 text-xs mt-0.5">{s.label}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--stats-label)' }}>{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* ── Progress ── */}
-        <div className="rounded-2xl p-5 mb-4" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl p-5 mb-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-white font-semibold text-sm">Progression</p>
-            <p className="text-white/40 text-xs">{stampCount} / {program.stampsRequired}</p>
+            <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Progression</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{stampCount} / {program.stampsRequired}</p>
           </div>
           <div className="h-2.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: LIME }} />
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: 'var(--stats-accent)' }} />
           </div>
           {pct >= 100
-            ? <p className="text-xs mt-2" style={{ color: LIME }}>🎉 Récompense débloquée !</p>
-            : <p className="text-white/30 text-xs mt-2">
+            ? <p className="text-xs mt-2" style={{ color: 'var(--stats-accent)' }}>🎉 Récompense débloquée !</p>
+            : <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
                 {program.stampsRequired - stampCount} tampon{program.stampsRequired - stampCount > 1 ? 's' : ''} pour votre récompense
               </p>
           }
@@ -665,8 +674,8 @@ export default function CartePage() {
 
         {/* ── Recent stamps ── */}
         {stamps.length > 0 && (
-          <div className="rounded-2xl p-5 mb-4" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="text-white font-semibold text-sm mb-4">Historique</p>
+          <div className="rounded-2xl p-5 mb-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-border)' }}>
+            <p className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Historique</p>
             <div className="space-y-3">
               {stamps.map(stamp => (
                 <div key={stamp.id} className="flex items-center gap-3">
@@ -682,9 +691,9 @@ export default function CartePage() {
 
         {/* ── Promotions ── */}
         {promotions.length > 0 && (
-          <div className="rounded-2xl overflow-hidden mb-4" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rounded-2xl overflow-hidden mb-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-border)' }}>
             <div className="px-5 pt-4 pb-3">
-              <p className="text-white font-semibold text-sm">Offres</p>
+              <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Offres</p>
             </div>
             <div className="px-5 pb-5 space-y-3">
               {promotions.slice(0, 3).map(promo => (
@@ -705,6 +714,7 @@ export default function CartePage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* ── Sticky CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-40 px-4"
@@ -713,7 +723,7 @@ export default function CartePage() {
           <button
             onClick={() => setShowQrModal(true)}
             className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-3 active:scale-98 transition-transform"
-            style={{ background: LIME, color: '#0D0D0D', boxShadow: `0 8px 32px ${LIME}40` }}
+            style={{ background: 'var(--cta-bg)', color: 'var(--cta-text)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2"/>

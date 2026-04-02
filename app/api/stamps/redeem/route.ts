@@ -15,10 +15,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { token } = redeemSchema.parse(body)
 
-    const qrCode = await prisma.qRCode.findUnique({
-      where: { token },
-      include: { program: true },
-    })
+    const [qrCode, pwaSettings] = await Promise.all([
+      prisma.qRCode.findUnique({ where: { token }, include: { program: true } }),
+      prisma.pwaSettings.findFirst({ select: { qrEnabled: true } }),
+    ])
+
+    if (pwaSettings?.qrEnabled === false) {
+      return NextResponse.json({ error: 'La fonctionnalité QR code est désactivée' }, { status: 403 })
+    }
 
     if (!qrCode) return NextResponse.json({ error: 'QR Code invalide' }, { status: 404 })
     if (qrCode.expiresAt && qrCode.expiresAt < new Date()) {
@@ -110,6 +114,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       stampsNow: rewardUnlocked ? 0 : newStamps,
+      stampsRequired,
       rewardUnlocked,
       rewardLabel: rewardUnlocked ? card.program.rewardLabel : null,
     })

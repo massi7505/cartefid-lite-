@@ -28,6 +28,7 @@ model User {
   resetOtpExpiry        DateTime?
   passwordChangedAt     DateTime?
   inactivityEmailSentAt DateTime?
+  isBlocked             Boolean            @default(false)
   createdAt             DateTime           @default(now())
   cards             LoyaltyCard[]
   stamps            Stamp[]
@@ -71,6 +72,7 @@ model LoyaltyProgram {
   cardSubtitle               String        @default("Carte Fidélité") @db.VarChar(191)
   cardNote                   String?       @db.Text
   cardBgImageUrl             String?       @db.VarChar(500)
+  cardIconUrl                String?       @db.VarChar(500)
   // PWA
   pwaEnabled                 Boolean       @default(true)
   pwaShortName               String?       @db.VarChar(100)
@@ -164,6 +166,7 @@ model PwaSettings {
   offlineMessage       String   @default("Vous êtes hors connexion. Reconnectez-vous pour scanner.")
   installPromptEnabled Boolean  @default(true)
   installPromptDelay   Int?     @default(30)
+  qrEnabled            Boolean  @default(true)
   updatedAt            DateTime @updatedAt
 }
 
@@ -178,4 +181,41 @@ model Promotion {
   active      Boolean   @default(true)
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
+}
+
+model ThemeSettings {
+  id               Int      @id @default(autoincrement())
+  // Structure
+  bgMain           String   @default("#0D0D0D")
+  bgSurface        String   @default("#141414")
+  bgSurfaceBorder  String   @default("rgba(255,255,255,0.06)")
+  // Header / Nav
+  headerBg         String   @default("#111111")
+  headerText       String   @default("#FFFFFF")
+  headerIcon       String   @default("rgba(255,255,255,0.6)")
+  avatarBg         String   @default("#CCFF00")
+  logoAccent       String   @default("#CCFF00")
+  // Bannière récompense
+  bannerBg         String   @default("rgba(123,47,190,0.18)")
+  bannerBorder     String   @default("rgba(123,47,190,0.3)")
+  bannerIconBg     String   @default("rgba(123,47,190,0.3)")
+  bannerTextTitle  String   @default("#FFFFFF")
+  bannerTextSub    String   @default("rgba(255,255,255,0.5)")
+  // Stats
+  statsBg          String   @default("#141414")
+  statsBorder      String   @default("rgba(255,255,255,0.06)")
+  statsValue       String   @default("#FFFFFF")
+  statsLabel       String   @default("rgba(255,255,255,0.4)")
+  statsAccent      String   @default("#CCFF00")
+  // CTA
+  ctaBg            String   @default("#CCFF00")
+  ctaBgHover       String   @default("#B8E600")
+  ctaText          String   @default("#000000")
+  ctaSubtext       String   @default("rgba(255,255,255,0.3)")
+  // Typographie
+  textPrimary      String   @default("#FFFFFF")
+  textSecondary    String   @default("rgba(255,255,255,0.7)")
+  textMuted        String   @default("rgba(255,255,255,0.4)")
+  textGreeting     String   @default("rgba(255,255,255,0.4)")
+  updatedAt        DateTime @updatedAt
 }

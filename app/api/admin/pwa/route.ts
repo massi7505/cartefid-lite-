@@ -35,7 +35,7 @@ export async function PUT(req: Request) {
       'appName', 'shortName', 'description', 'startUrl',
       'themeColor', 'backgroundColor', 'display', 'orientation',
       'logoUrl', 'faviconUrl', 'splashUrl',
-      'pwaEnabled', 'offlineMessage', 'installPromptEnabled', 'installPromptDelay',
+      'pwaEnabled', 'offlineMessage', 'installPromptEnabled', 'installPromptDelay', 'qrEnabled',
     ]
     const data: Record<string, unknown> = {}
     for (const key of allowed) {

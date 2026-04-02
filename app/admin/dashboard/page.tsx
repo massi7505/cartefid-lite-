@@ -33,6 +33,7 @@ interface Stats {
   completionRate: number
   stampsPerDay: Array<{ date: string; count: number }>
   recentStamps: Array<{ id: number; createdAt: string; user: { name: string; email: string } }>
+  topClients: Array<{ stamps: number; rewards: Array<{ id: number }>; user: { id: number; name: string; email: string } }>
 }
 
 function fmtTime(d: string) {
@@ -175,26 +176,6 @@ export default function DashboardPage() {
         </StatCard>
       </div>
 
-      {/* ── PWA status banner ── */}
-      <Link href="/admin/pwa"
-        className="flex items-center gap-4 p-4 rounded-2xl bg-white transition hover:shadow-md"
-        style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.08)' }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-            <rect x="5" y="2" width="14" height="20" rx="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold" style={{ color: '#2B3674' }}>Application PWA</p>
-          <p className="text-xs truncate" style={{ color: '#A3AED0' }}>Configurer l'app installable · nom, couleurs, icônes</p>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A3AED0" strokeWidth="2" strokeLinecap="round">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      </Link>
-
       {/* ── Charts row ── */}
       <DashboardCharts
         areaData={areaData}
@@ -202,20 +183,20 @@ export default function DashboardPage() {
         stampsThisMonth={stats.stampsThisMonth}
       />
 
-      {/* ── Activity + Quick actions ── */}
-      <div className="grid lg:grid-cols-[1fr_280px] gap-4">
+      {/* ── Bottom section: Activity + Top clients + Quick actions ── */}
+      <div className="grid lg:grid-cols-[1fr_320px] gap-4">
 
-        {/* Recent stamps */}
-        <div className="bg-white rounded-2xl" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-            <h2 className="font-bold" style={{ color: '#2B3674' }}>Activité récente</h2>
+        {/* Left: Recent stamps */}
+        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+            <h2 className="font-bold text-sm" style={{ color: '#2B3674' }}>Activité récente</h2>
             <Link href="/admin/clients" className="text-xs font-semibold hover:opacity-70 transition" style={{ color: '#4318FF' }}>
               Voir tout →
             </Link>
           </div>
           {stats.recentStamps.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 text-center" style={{ color: '#A3AED0' }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="mb-3 opacity-40">
+            <div className="flex flex-col items-center justify-center py-12 text-center" style={{ color: '#A3AED0' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="mb-2 opacity-40">
                 <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
               </svg>
               <p className="text-sm">Aucun tampon distribué</p>
@@ -223,11 +204,11 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y divide-gray-50">
               {stats.recentStamps.map((s, i) => (
-                <div key={s.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50/50 transition">
-                  <span className="text-xs font-semibold w-5 flex-shrink-0" style={{ color: '#A3AED0' }}>
+                <div key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition">
+                  <span className="text-xs font-semibold w-5 flex-shrink-0 text-right" style={{ color: '#A3AED0' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}>
                     {s.user.name[0]?.toUpperCase()}
                   </div>
@@ -236,11 +217,11 @@ export default function DashboardPage() {
                     <p className="text-xs truncate" style={{ color: '#A3AED0' }}>{s.user.email}</p>
                   </div>
                   <div className="flex-shrink-0 text-right">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
                       style={{ background: '#EEF2FF', color: '#4318FF' }}>
-                      +1 tampon
+                      +1
                     </span>
-                    <p className="text-xs mt-1" style={{ color: '#A3AED0' }}>{fmtTime(s.createdAt)}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: '#A3AED0' }}>{fmtTime(s.createdAt)}</p>
                   </div>
                 </div>
               ))}
@@ -248,45 +229,80 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick actions */}
+        {/* Right column: Top clients + Quick actions */}
         <div className="space-y-4">
+
+          {/* Top clients compact */}
+          {stats.topClients.length > 0 && (
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+                <h2 className="font-bold text-sm" style={{ color: '#2B3674' }}>🏆 Meilleurs clients</h2>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#EEF2FF', color: '#4318FF' }}>
+                  Top {stats.topClients.length}
+                </span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {stats.topClients.slice(0, 5).map((c, i) => (
+                  <div key={c.user.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition">
+                    <span className="text-base flex-shrink-0 w-5 text-center">
+                      {i < 3 ? ['🥇','🥈','🥉'][i] : <span className="text-xs font-bold" style={{ color: '#A3AED0' }}>{i + 1}</span>}
+                    </span>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #868CFF 0%, #4318FF 100%)' }}>
+                      {c.user.name[0]?.toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold truncate" style={{ color: '#2B3674' }}>{c.user.name}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-sm font-black" style={{ color: '#4318FF' }}>{c.stamps}</span>
+                      <span className="text-[10px] ml-0.5" style={{ color: '#A3AED0' }}>pts</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scanner CTA */}
           <Link href="/admin/scanner"
-            className="flex items-center gap-4 p-5 rounded-2xl text-white transition hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)', boxShadow: '0 8px 24px rgba(67,24,255,0.30)' }}>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+            className="flex items-center gap-3 p-4 rounded-2xl text-white transition hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)', boxShadow: '0 8px 24px rgba(67,24,255,0.25)' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'rgba(255,255,255,0.15)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
                 <line x1="7" y1="12" x2="17" y2="12"/>
               </svg>
             </div>
             <div>
               <p className="font-bold text-sm">Scanner un client</p>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>QR code ou code à 8 chiffres</p>
+              <p className="text-xs opacity-70">QR code ou code à 8 chiffres</p>
             </div>
           </Link>
 
-          {[
-            { href: '/admin/clients',     label: 'Clients',     sub: `${stats.totalClients} inscrits`,       dot: '#4318FF', bg: '#EEF2FF' },
-            { href: '/admin/recompenses', label: 'Récompenses', sub: `${stats.rewardsAvailable} en attente`,  dot: '#FFB547', bg: '#FFF8EB' },
-            { href: '/admin/promotions',  label: 'Promotions',  sub: 'Gérer les offres',                      dot: '#01B574', bg: '#E6FBF4' },
-            { href: '/admin/programme',   label: 'Programme',   sub: 'Configuration',                         dot: '#EE5D50', bg: '#FFF2F0' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-4 px-5 py-4 bg-white rounded-2xl transition hover:shadow-md"
-              style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: item.bg }}>
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.dot }}/>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: '#2B3674' }}>{item.label}</p>
-                <p className="text-xs truncate" style={{ color: '#A3AED0' }}>{item.sub}</p>
-              </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A3AED0" strokeWidth="2" strokeLinecap="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </Link>
-          ))}
+          {/* Quick links */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { href: '/admin/clients',     label: 'Clients',     sub: `${stats.totalClients}`, dot: '#4318FF', bg: '#EEF2FF' },
+              { href: '/admin/recompenses', label: 'Récompenses', sub: `${stats.rewardsAvailable}`, dot: '#FFB547', bg: '#FFF8EB' },
+              { href: '/admin/promotions',  label: 'Promotions',  sub: 'Offres', dot: '#01B574', bg: '#E6FBF4' },
+              { href: '/admin/programme',   label: 'Programme',   sub: 'Config', dot: '#EE5D50', bg: '#FFF2F0' },
+            ].map(item => (
+              <Link key={item.href} href={item.href}
+                className="flex flex-col gap-2 p-3.5 bg-white rounded-2xl transition hover:shadow-md"
+                style={{ boxShadow: '14px 17px 40px 4px rgba(112,144,176,0.10)' }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: item.bg }}>
+                  <div className="w-2 h-2 rounded-full" style={{ background: item.dot }}/>
+                </div>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: '#2B3674' }}>{item.label}</p>
+                  <p className="text-xs" style={{ color: '#A3AED0' }}>{item.sub}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
         </div>
       </div>
 
